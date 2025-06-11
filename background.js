@@ -58,11 +58,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === 'likePosts') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (
-        tabs[0] &&
-        (tabs[0].url.startsWith('https://twitter.com/') ||
-          tabs[0].url.startsWith('https://x.com/'))
-      ) {
+      if (tabs[0] && tabs[0].url.startsWith('https://x.com/')) {
         chrome.tabs.sendMessage(
           tabs[0].id,
           { action: 'startLiking' },
@@ -85,18 +81,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       } else {
         sendResponse({
           status: 'error',
-          message: 'Not on an X (Twitter) page.',
+          message: 'Not on an X page.',
         })
       }
     })
     return true // Indicate that sendResponse will be called asynchronously
   } else if (request.action === 'analyzeActivity') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (
-        tabs[0] &&
-        (tabs[0].url.startsWith('https://twitter.com/') ||
-          tabs[0].url.startsWith('https://x.com/'))
-      ) {
+      if (tabs[0] && tabs[0].url.startsWith('https://x.com/')) {
         chrome.tabs.sendMessage(
           tabs[0].id,
           { action: 'startAnalysis' },
@@ -119,7 +111,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       } else {
         sendResponse({
           status: 'error',
-          message: 'Not on an X (Twitter) page.',
+          message: 'Not on an X page.',
         })
       }
     })
