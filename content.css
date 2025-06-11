@@ -1,0 +1,105 @@
+/*
+  This CSS file is injected directly into the X (Twitter) page.
+  Use it to style the custom UI elements added by your content.js script,
+  such as the "Suggest Reply" and "Mark for Follow" buttons,
+  and any message boxes or suggestion displays.
+
+  Note: Be mindful of X's existing styles to avoid conflicts.
+  Use specific classes or IDs to target your elements.
+*/
+
+.xpressive-button-container {
+  /* Styles for the container holding your custom buttons */
+  margin-top: 8px;
+  display: flex;
+  gap: 8px; /* Space between buttons */
+  align-items: center;
+  /* You might need to adjust positioning based on X's DOM */
+}
+
+.xpressive-btn {
+  /* Base styles for your custom buttons */
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out;
+  padding: 6px 12px;
+  border-radius: 9999px; /* For a pill shape like X's buttons */
+  font-size: 0.75rem; /* text-xs */
+  line-height: 1rem;
+}
+
+.xpressive-btn:hover {
+  transform: translateY(-1px); /* Slight lift on hover */
+}
+
+.xpressive-btn:active {
+  transform: translateY(0); /* Return to original position on click */
+}
+
+/* Styles for the reply/post suggestion display */
+.xpressive-reply-suggestion,
+.xpressive-post-suggestion {
+  font-family: 'Inter', sans-serif;
+  background-color: #e0f2fe; /* bg-blue-50 */
+  border: 1px solid #90cdf4; /* border-blue-200 */
+  color: #1e3a8a; /* text-blue-800 */
+  font-size: 0.875rem; /* text-sm */
+  padding: 12px;
+  border-radius: 0.375rem; /* rounded-md */
+  margin-top: 8px;
+  line-height: 1.5;
+  word-wrap: break-word; /* Ensure long text wraps */
+}
+
+.xpressive-reply-suggestion p,
+.xpressive-post-suggestion p {
+  margin-bottom: 8px; /* Space between paragraphs in suggestion */
+}
+
+.xpressive-reply-suggestion p:last-child,
+.xpressive-post-suggestion p:last-child {
+  margin-bottom: 0;
+}
+
+.xpressive-reply-suggestion .copy-suggestion-btn,
+.xpressive-post-suggestion .copy-suggestion-btn {
+  background-color: #bfdbfe; /* bg-blue-200 */
+  color: #1e40af; /* text-blue-800 */
+  padding: 4px 8px;
+  border-radius: 0.375rem; /* rounded-md */
+  font-size: 0.75rem; /* text-xs */
+  cursor: pointer;
+  border: none;
+  margin-top: 8px;
+}
+
+.xpressive-reply-suggestion .copy-suggestion-btn:hover,
+.xpressive-post-suggestion .copy-suggestion-btn:hover {
+  background-color: #93c5fd; /* hover:bg-blue-300 */
+}
+
+/* Custom message box for notifications (instead of alert) */
+#xpressive-message-box {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background-color: rgba(
+    31,
+    41,
+    55,
+    0.9
+  ); /* bg-gray-800 with some transparency */
+  color: #ffffff; /* text-white */
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10000; /* Ensure it's on top of X's content */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+#xpressive-message-box.hidden {
+  display: none;
+}
