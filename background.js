@@ -1,18 +1,35 @@
-// This script runs in the background and handles long-running tasks and inter-component communication.
-
 chrome.runtime.onInstalled.addListener(() => {
   console.log('Xpressive installed.')
-  // Any initial setup, like setting default storage values, can go here.
 })
 
-// Function to call Openrouter API
-async function callOpenrouter(
-  prompt,
-  model = 'mistralai/mistral-7b-instruct-v0.2'
-) {
+async function getApiKey() {
+  console.log('00')
+  try {
+    console.log('0')
+    return new Promise((resolve) => {
+      chrome.storage.sync.get('apikey', (data) => {
+        console.log('Retrieving API key from storage:', data)
+
+        data.apikey ? resolve(data.apikey) : resolve(null)
+      })
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+async function callOpenrouter(prompt, model = 'openai/gpt-4o-mini') {
   // Default model
-  const apiKey = '' // API key will be provided by Canvas runtime
+  console.log('1')
+
+  const apiKey = await getApiKey()
   const apiUrl = 'https://openrouter.ai/api/v1/chat/completions'
+
+  console.log('apiKey', apiKey)
+
+  if (!apiKey) {
+    console.error('API key not found. Please set it in the extension options.')
+    return null
+  }
 
   try {
     const response = await fetch(apiUrl, {
@@ -20,8 +37,6 @@ async function callOpenrouter(
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        // Optional: You can add HTTP-Referer and X-Title for Openrouter leaderboards
-        'HTTP-Referer': 'https://example.com/xpressive', // Replace with your extension's actual URL/identifier
         'X-Title': 'Xpressive',
       },
       body: JSON.stringify({
@@ -48,84 +63,27 @@ async function callOpenrouter(
     }
   } catch (error) {
     console.error('Error calling Openrouter API:', error)
-    return null // Return null on error
+    return null
   }
 }
 
 // Listen for messages from popup or content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Background script received message:', request.action)
+  console.log('2')
 
-  if (request.action === 'likePosts') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0] && tabs[0].url.startsWith('https://x.com/')) {
-        chrome.tabs.sendMessage(
-          tabs[0].id,
-          { action: 'startLiking' },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              console.error(
-                'Error sending message to content script:',
-                chrome.runtime.lastError.message
-              )
-              sendResponse({
-                status: 'error',
-                message: chrome.runtime.lastError.message,
-              })
-            } else {
-              console.log('Message sent to content script to start liking.')
-              sendResponse({ status: 'success' })
-            }
-          }
-        )
-      } else {
-        sendResponse({
-          status: 'error',
-          message: 'Not on an X page.',
-        })
-      }
-    })
-    return true // Indicate that sendResponse will be called asynchronously
-  } else if (request.action === 'analyzeActivity') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0] && tabs[0].url.startsWith('https://x.com/')) {
-        chrome.tabs.sendMessage(
-          tabs[0].id,
-          { action: 'startAnalysis' },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              console.error(
-                'Error sending message to content script:',
-                chrome.runtime.lastError.message
-              )
-              sendResponse({
-                status: 'error',
-                message: chrome.runtime.lastError.message,
-              })
-            } else {
-              console.log('Message sent to content script to start analysis.')
-              sendResponse({ status: 'success' })
-            }
-          }
-        )
-      } else {
-        sendResponse({
-          status: 'error',
-          message: 'Not on an X page.',
-        })
-      }
-    })
-    return true // Indicate that sendResponse will be called asynchronously
-  } else if (
+  if (
     request.action === 'getReplySuggestions' ||
     request.action === 'getPostIdeas'
   ) {
+    console.log('3')
     ;(async () => {
       const prompt = request.prompt
       console.log(
         `Received LLM request for: ${request.action} with prompt: "${prompt}"`
       )
 
+      console.log('4')
       const llmResponse = await callOpenrouter(prompt)
 
       if (llmResponse) {
@@ -137,10 +95,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       } else {
         sendResponse({
           status: 'error',
-          message: 'Failed to get response from Openrouter API.',
+          message: 'FFailed to get response from Openrouter API.',
         })
       }
     })()
-    return true // Indicate that sendResponse will be called asynchronously
+    return true
   }
 })

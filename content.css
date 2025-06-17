@@ -1,13 +1,3 @@
-/*
-  This CSS file is injected directly into the X (Twitter) page.
-  Use it to style the custom UI elements added by your content.js script,
-  such as the "Suggest Reply" and "Mark for Follow" buttons,
-  and any message boxes or suggestion displays.
-
-  Note: Be mindful of X's existing styles to avoid conflicts.
-  Use specific classes or IDs to target your elements.
-*/
-
 .xpressive-button-container {
   /* Styles for the container holding your custom buttons */
   margin-top: 8px;
@@ -24,10 +14,11 @@
   border: none;
   outline: none;
   transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out;
-  padding: 6px 12px;
+  padding: 4px 8px; /* px-2 py-1 equivalent */
   border-radius: 9999px; /* For a pill shape like X's buttons */
   font-size: 0.75rem; /* text-xs */
   line-height: 1rem;
+  color: #ffffff; /* text-white equivalent */
 }
 
 .xpressive-btn:hover {
@@ -38,14 +29,37 @@
   transform: translateY(0); /* Return to original position on click */
 }
 
+/* Specific button styles */
+.xpressive-btn-purple {
+  background-color: #9333ea; /* bg-purple-500 */
+}
+
+.xpressive-btn-purple:hover {
+  background-color: #7e22ce; /* hover:bg-purple-600 */
+}
+
+.xpressive-follow-btn-yellow {
+  background-color: #f59e0b; /* bg-yellow-500 */
+}
+
+.xpressive-follow-btn-yellow:hover {
+  background-color: #d97706; /* hover:bg-yellow-600 */
+}
+
+.xpressive-follow-btn-marked {
+  background-color: #6b7280; /* bg-gray-500 */
+  cursor: default;
+}
+
+.xpressive-follow-btn-marked:hover {
+  transform: none; /* No lift on hover when marked */
+}
+
 /* Styles for the reply/post suggestion display */
 .xpressive-reply-suggestion,
 .xpressive-post-suggestion {
   font-family: 'Inter', sans-serif;
-  background-color: #e0f2fe; /* bg-blue-50 */
-  border: 1px solid #90cdf4; /* border-blue-200 */
-  color: #1e3a8a; /* text-blue-800 */
-  font-size: 0.875rem; /* text-sm */
+  color: inherit; /* text-blue-800 */
   padding: 12px;
   border-radius: 0.375rem; /* rounded-md */
   margin-top: 8px;
@@ -63,20 +77,27 @@
   margin-bottom: 0;
 }
 
-.xpressive-reply-suggestion .copy-suggestion-btn,
-.xpressive-post-suggestion .copy-suggestion-btn {
-  background-color: #bfdbfe; /* bg-blue-200 */
-  color: #1e40af; /* text-blue-800 */
+.xpressive-reply-suggestion div {
+  margin-top: 10px;
+  border: 1px solid rgb(47, 51, 54);
+  padding: 10px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.copy-suggestion-btn {
+  background-color: rgb(239, 243, 244);
+  color: rgb(15, 20, 25);
   padding: 4px 8px;
-  border-radius: 0.375rem; /* rounded-md */
-  font-size: 0.75rem; /* text-xs */
+  border-radius: 9999px;
+  font-size: 0.75rem;
   cursor: pointer;
-  border: none;
-  margin-top: 8px;
+  transition: background-color 0.15s ease-in-out;
+  margin-left: 10px;
 }
 
-.xpressive-reply-suggestion .copy-suggestion-btn:hover,
-.xpressive-post-suggestion .copy-suggestion-btn:hover {
+.copy-suggestion-btn:hover {
   background-color: #93c5fd; /* hover:bg-blue-300 */
 }
 
@@ -84,7 +105,7 @@
 #xpressive-message-box {
   position: fixed;
   bottom: 16px;
-  right: 16px;
+  left: 16px;
   background-color: rgba(
     31,
     41,
@@ -92,14 +113,16 @@
     0.9
   ); /* bg-gray-800 with some transparency */
   color: #ffffff; /* text-white */
-  padding: 12px 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 10000; /* Ensure it's on top of X's content */
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  padding: 8px 16px; /* px-4 py-2 equivalent */
+  border-radius: 6px; /* rounded-md equivalent */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg equivalent */
+  z-index: 10000; /* z-50 equivalent */
+  opacity: 1;
+  transition: opacity 0.4s ease-in-out; /* transition-opacity duration-300 equivalent */
 }
 
 #xpressive-message-box.hidden {
-  display: none;
+  opacity: 0;
+  transition: 0.4s;
 }

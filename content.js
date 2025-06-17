@@ -1,15 +1,12 @@
-// This script runs in the context of the X (Twitter) page.
 console.log('Xpressive content script loaded.')
 
-// Function to inject UI elements (e.g., buttons) into the X page
 function injectUI() {
-  // Example: Add a button next to each tweet
-  // This is a simplified example and would need robust selectors for X's dynamic DOM
-  const tweets = document.querySelectorAll('article[data-testid="tweet"]') // Adjust selector as needed
+  const tweets = document.querySelectorAll('article[data-testid="tweet"]')
 
   tweets.forEach((tweet) => {
-    if (!tweet.querySelector('.xpressive-button-container')) {
-      // Prevent multiple injections
+    if (!tweet.dataset.xEnhancerProcessed) {
+      tweet.dataset.xEnhancerProcessed = 'true'
+
       const buttonContainer = document.createElement('div')
       buttonContainer.className =
         'xpressive-button-container flex items-center space-x-2 mt-2'
@@ -17,128 +14,116 @@ function injectUI() {
       const replySuggestBtn = document.createElement('button')
       replySuggestBtn.textContent = 'Suggest Reply'
       replySuggestBtn.className =
-        'xpressive-btn bg-purple-500 text-white text-xs px-2 py-1 rounded-full hover:bg-purple-600 transition duration-150 ease-in-out'
+        'xpressive-btn xpressive-btn-purple transition duration-150 ease-in-out'
       replySuggestBtn.addEventListener('click', () =>
         handleReplySuggestion(tweet)
       )
 
-      const followSuggestBtn = document.createElement('button')
-      followSuggestBtn.textContent = 'Mark for Follow'
-      followSuggestBtn.className =
-        'xpressive-btn bg-yellow-500 text-white text-xs px-2 py-1 rounded-full hover:bg-yellow-600 transition duration-150 ease-in-out'
-      followSuggestBtn.addEventListener('click', () =>
-        handleMarkForFollow(tweet)
-      )
-
       buttonContainer.appendChild(replySuggestBtn)
-      buttonContainer.appendChild(followSuggestBtn)
 
-      // Find a suitable place to insert the buttons
-      // This will likely require careful inspection of X's DOM structure
-      const tweetActionsBar = tweet.querySelector('div[role="group"]') // Example selector for the actions bar (like, retweet, etc.)
+      const tweetActionsBar = tweet.querySelector('div[role="group"]')
       if (tweetActionsBar) {
         tweetActionsBar.parentNode.insertBefore(
           buttonContainer,
           tweetActionsBar.nextSibling
         )
       } else {
-        tweet.appendChild(buttonContainer) // Fallback
+        tweet.appendChild(buttonContainer)
       }
     }
   })
 }
 
-// Observe DOM changes to inject buttons on new tweets (X is a Single Page Application)
 const observer = new MutationObserver(injectUI)
 observer.observe(document.body, { childList: true, subtree: true })
 
-// Initial injection
 injectUI()
 
-// Function to handle "Like Posts from List" action
-async function startLikingPosts() {
-  console.log('Starting to like posts...')
-  // Retrieve post list and settings from storage (background script would typically fetch this)
-  // For demonstration, let's assume a dummy list
-  const dummyPosts = [
-    { id: '123', text: 'Excited about new AI advancements!' },
-    { id: '456', text: 'Great thread on web development tips.' },
-  ]
-
-  for (const post of dummyPosts) {
-    // Find the actual post element on the page by its content or data attribute
-    const postElement = document.querySelector(
-      `article[data-testid="tweet"] [aria-label*="${post.text.substring(
-        0,
-        20
-      )}"]`
-    ) // Highly simplified
-    if (postElement) {
-      console.log(`Checking if post "${post.text}" is related...`)
-      // Implement your "related to account based on settings" logic here.
-      // This might involve calling an LLM via the background script.
-      const isRelated = true // Placeholder for actual logic
-
-      if (isRelated) {
-        // Find and click the like button
-        const likeButton = postElement.querySelector(
-          'button[data-testid="like"]'
-        ) // Adjust selector
-        if (
-          likeButton &&
-          !likeButton.getAttribute('aria-label').includes('Unlike')
-        ) {
-          // Check if already liked
-          likeButton.click()
-          console.log(`Liked post: "${post.text}"`)
-        } else {
-          console.log(
-            `Post already liked or like button not found for: "${post.text}"`
-          )
-        }
-      } else {
-        console.log(`Post not related, skipping: "${post.text}"`)
-      }
-    } else {
-      console.log(`Post element not found for: "${post.text}"`)
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1000)) // Simulate delay
-  }
-  console.log('Finished liking posts.')
-}
-
-// Function to handle "Reply Suggestions"
 async function handleReplySuggestion(tweetElement) {
   const tweetText =
     tweetElement.querySelector('div[data-testid="tweetText"]')?.innerText || ''
+  tweetElement.style.flexDirection = 'column'
+
   if (!tweetText) {
     console.warn('Could not find tweet text for reply suggestion.')
+    showCustomMessage('Could not get tweet text for suggestion.')
     return
   }
 
-  // You would send the tweetText and user's tone/settings to the background script
-  // which then calls the LLM.
-  const prompt = `Suggest a reply for the following X post, considering a ${await getUserTone()} tone: "${tweetText}"`
+  showCustomMessage('Generating reply suggestion...')
+  const prompt = `
+
+
+Generate 5 different Twitter replies that sound like real people texting. Keep each reply between 5-25 words and avoid overusing punctuation.
+
+## Core Rules
+- First understand the tweets real meaning and tone - is it sarcastic educational complaining joking motivational etc
+- Match that exact energy and context in your reply
+- Find the balance between too formal and too casual - sound natural but not overly chatty
+- Minimal punctuation - real people dont pepper texts with commas and periods  
+- No exclamation marks hyphens or corporate words like absolutely totally amazing
+- Skip questions unless they sound completely natural
+- Be specific instead of using this that it
+
+## Reply Styles
+Read the original tweet carefully to understand if its:
+- **Sarcastic/Snarky**: Match the sarcasm without being mean
+- **Educational**: Add value or share related knowledge  
+- **Complaining**: Relate to their frustration appropriately
+- **Joking**: Play along with the humor naturally
+- **Motivational**: Support without being preachy
+- **Controversial**: Respond thoughtfully not reactively
+- **Personal story**: Share similar experience or relate
+- **Asking for help**: Offer genuine useful input
+
+## Natural Balance
+- Not too formal like a business email
+- Not too casual like texting your best friend  
+- Sound like a normal person who understands context
+- Match the tweets energy level - dont be overly excited for a calm post
+- If someones being sarcastic dont respond with genuine enthusiasm
+- If someones sharing knowledge dont just say cool thanks
+
+## Examples
+
+**Tweet**: "Can't believe how quickly the weekend flew by!"
+**Replies**: 
+- "Monday always shows up uninvited"
+- "Weekends are basically a scam at this point"
+- "Time moves different on weekends I swear"
+
+**Tweet**: "Just finished my first marathon and I'm still buzzing with excitement!"
+**Replies**:
+- "26.2 miles is no joke well done"
+- "Your legs probably hate you right now"
+- "First marathon hits different"
+
+## Output Format
+Return exactly 5 replies in this format:
+[reply1, reply2, reply3, reply4, reply5]
+
+---
+
+**Original Tweet**: "${tweetText}"
+`
   console.log(`Requesting reply suggestion for: "${tweetText}"`)
 
-  // Send message to background script for LLM call
   chrome.runtime.sendMessage(
     { action: 'getReplySuggestions', prompt: prompt },
     (response) => {
       if (response && response.status === 'success' && response.suggestion) {
         console.log('Reply suggestion:', response.suggestion)
-        // Display the suggestion to the user, perhaps in a modal or a text area near the reply button
-        displaySuggestion(tweetElement, response.suggestion, 'reply')
+        displayReplySuggestion(tweetElement, response.suggestion, 'reply')
+        showCustomMessage('Reply suggestion ready!')
       } else {
         console.error('Failed to get reply suggestion:', response)
+        showCustomMessage('Failed to get reply suggestion.')
       }
     }
   )
 }
 
-// Placeholder for getting user tone from settings
 async function getUserTone() {
-  // In a real app, this would fetch from chrome.storage
   return new Promise((resolve) => {
     chrome.storage.sync.get('toneSetting', (data) => {
       resolve(data.toneSetting || 'friendly') // Default to friendly
@@ -146,139 +131,156 @@ async function getUserTone() {
   })
 }
 
-// Function to display suggestion (placeholder)
 function displaySuggestion(tweetElement, suggestion, type) {
   let suggestionArea = tweetElement.querySelector(
     `.xpressive-${type}-suggestion`
   )
   if (!suggestionArea) {
     suggestionArea = document.createElement('div')
-    suggestionArea.className = `xpressive-${type}-suggestion bg-blue-50 border border-blue-200 text-blue-800 text-sm p-3 rounded-md mt-2`
+    suggestionArea.className = `xpressive-${type}-suggestion`
     tweetElement.appendChild(suggestionArea)
   }
   suggestionArea.innerHTML = `<p class="font-semibold">${
     type === 'reply' ? 'Suggested Reply:' : 'Suggested Idea:'
   }</p><p>${suggestion}</p>
-                                <button class="copy-suggestion-btn bg-blue-200 text-blue-800 px-2 py-1 rounded-md text-xs mt-2 hover:bg-blue-300">Copy</button>`
+                                <button class="copy-suggestion-btn">Copy</button>`
   suggestionArea
     .querySelector('.copy-suggestion-btn')
     .addEventListener('click', () => {
-      document.execCommand('copy') // For clipboard
       const textarea = document.createElement('textarea')
       textarea.value = suggestion
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
       document.body.appendChild(textarea)
       textarea.select()
       document.execCommand('copy')
       document.body.removeChild(textarea)
-      // Using a custom modal instead of alert for better UX
       showCustomMessage('Suggestion copied to clipboard!')
+
+      const tweetReplyButton = tweetElement.querySelector(
+        'button[data-testid="reply"]'
+      )
+
+      if (tweetReplyButton) {
+        tweetReplyButton.click()
+        showCustomMessage('Opening reply modal...')
+      }
     })
 }
 
-// Custom message box function (instead of alert)
+function displayReplySuggestion(tweetElement, suggestions, type) {
+  const suggestionsArray = suggestions.replace(/['"\]\[]+/g, '').split(',')
+  console.log(suggestionsArray)
+
+  for (let i = 0; i < suggestionsArray.length; i++) {
+    let suggestion = suggestionsArray[i].trim()
+    let suggestionArea = tweetElement.querySelector(
+      `.xpressive-${type}-suggestion`
+    )
+
+    if (!suggestionArea) {
+      suggestionArea = document.createElement('div')
+      suggestionArea.className = `xpressive-${type}-suggestion`
+      tweetElement.appendChild(suggestionArea)
+    }
+
+    const suggestionContainer = document.createElement('div')
+
+    const suggestionParagraph = document.createElement('p')
+    suggestionParagraph.textContent = suggestion
+
+    const copyButton = document.createElement('button')
+    copyButton.className = 'copy-suggestion-btn'
+    copyButton.textContent = 'Use'
+
+    copyButton.addEventListener('click', () => {
+      const textarea = document.createElement('textarea')
+      textarea.value = suggestion
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      showCustomMessage('Suggestion copied to clipboard!')
+
+      const tweetReplyButton = tweetElement.querySelector(
+        'button[data-testid="reply"]'
+      )
+      const tweetLikeButton = tweetElement.querySelector(
+        'button[data-testid="like"]'
+      )
+      if (tweetReplyButton && tweetLikeButton) {
+        tweetLikeButton.click()
+        tweetReplyButton.click()
+        showCustomMessage('Opening reply modal...')
+      }
+    })
+
+    suggestionContainer.appendChild(suggestionParagraph)
+    suggestionContainer.appendChild(copyButton)
+
+    suggestionArea.appendChild(suggestionContainer)
+  }
+}
+
 function showCustomMessage(message, duration = 3000) {
   let messageBox = document.getElementById('xpressive-message-box')
   if (!messageBox) {
     messageBox = document.createElement('div')
     messageBox.id = 'xpressive-message-box'
-    messageBox.className =
-      'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-md shadow-lg z-50 opacity-0 transition-opacity duration-300'
-    document.body.appendChild(messageBox)
+    messageBox.className = ''
+    const newbox = document.body.appendChild(messageBox)
+    console.log('Created message box:', newbox)
   }
   messageBox.textContent = message
   messageBox.classList.remove('hidden')
   messageBox.classList.add('opacity-100')
 
   setTimeout(() => {
-    messageBox.classList.remove('opacity-100')
-    messageBox.classList.add('opacity-0')
     setTimeout(() => {
       messageBox.classList.add('hidden')
-    }, 300) // Wait for fade-out transition
+    }, 300)
   }, duration)
 }
 
-// Function to handle "Mark related accounts for follow"
-function handleMarkForFollow(tweetElement) {
-  console.log('Marking account for follow (feature logic to be implemented).')
-  // Extract account information from tweetElement
-  const username = tweetElement.querySelector('a[role="link"] span')?.innerText // Adjust selector
-  if (username) {
-    console.log(`Account "${username}" marked for potential follow.`)
-    // Store this account in chrome.storage or send to background script for processing
-    // based on your "related accounts" settings.
-    chrome.storage.local.get({ markedAccounts: [] }, (result) => {
-      const markedAccounts = result.markedAccounts
-      if (!markedAccounts.includes(username)) {
-        markedAccounts.push(username)
-        chrome.storage.local.set({ markedAccounts: markedAccounts }, () => {
-          console.log(`"${username}" added to marked accounts.`)
-          // Provide visual feedback
-          const followBtn = tweetElement.querySelector(
-            '.xpressive-btn.bg-yellow-500'
-          )
-          if (followBtn) {
-            followBtn.textContent = 'Marked!'
-            followBtn.classList.remove('bg-yellow-500')
-            followBtn.classList.add('bg-gray-500')
-            followBtn.disabled = true
-          }
-          showCustomMessage(`Account @${username} marked for follow!`)
-        })
-      } else {
-        console.log(`"${username}" already marked.`)
-        showCustomMessage(`Account @${username} is already marked.`)
-      }
-    })
-  }
-}
-
-// Function to handle "Suggest ideas for writing new posts"
 async function getPostIdeas() {
   console.log('Requesting post ideas...')
-  // You would send user's interests/settings to the background script
-  // which then calls the LLM.
+  showCustomMessage('Generating post ideas...')
+
   const prompt = `Suggest 3 unique and engaging X post ideas about ${await getUserInterests()}.`
 
-  // Send message to background script for LLM call
   chrome.runtime.sendMessage(
     { action: 'getPostIdeas', prompt: prompt },
     (response) => {
       if (response && response.status === 'success' && response.idea) {
         console.log('Post ideas:', response.idea)
-        // Display the ideas to the user (e.g., in a popup or a dedicated section)
-        // For now, let's just log it. A dedicated UI would be better.
-        displaySuggestion(document.body, response.idea, 'post') // Attach to body for now
+        displaySuggestion(document.body, response.idea, 'post')
+        showCustomMessage('Post ideas ready!')
       } else {
         console.error('Failed to get post ideas:', response)
+        showCustomMessage('Failed to get post ideas.')
       }
     }
   )
 }
 
-// Placeholder for getting user interests from settings
 async function getUserInterests() {
-  // In a real app, this would fetch from chrome.storage
   return new Promise((resolve) => {
     chrome.storage.sync.get('interestsSetting', (data) => {
-      resolve(data.interestsSetting || 'technology and social media') // Default interests
+      resolve(data.interestsSetting || 'technology and social media')
     })
   })
 }
 
-// Function to handle "Analyze activity"
 function analyzeActivity() {
   console.log('Starting activity analysis...')
-  // This feature would require extensive DOM parsing to categorize tweets,
-  // count engagements, etc. It's complex and would depend on the exact
-  // structure of X's feed and post elements.
-  // Example: Count different types of posts or topics
+  showCustomMessage('Analyzing activity...')
   const feedPosts = document.querySelectorAll('article[data-testid="tweet"]')
   const categories = {}
   feedPosts.forEach((post) => {
     const text =
       post.querySelector('div[data-testid="tweetText"]')?.innerText || ''
-    // Very basic categorization based on keywords
     if (text.toLowerCase().includes('ai')) {
       categories['AI'] = (categories['AI'] || 0) + 1
     } else if (
@@ -298,22 +300,12 @@ function analyzeActivity() {
     console.log(`${category}: ${categories[category]} posts (${percentage}%)`)
   }
 
-  // Send results back to popup or options page for display
   chrome.runtime.sendMessage({
     action: 'analysisResults',
     data: categories,
     total: total,
   })
+  showCustomMessage(
+    'Activity analysis complete! Check console or dedicated UI.'
+  )
 }
-
-// Listen for messages from the background script (e.g., triggered by popup)
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'startLiking') {
-    startLikingPosts()
-    sendResponse({ status: 'success', message: 'Liking initiated.' })
-  } else if (request.action === 'startAnalysis') {
-    analyzeActivity()
-    sendResponse({ status: 'success', message: 'Analysis initiated.' })
-  }
-  return true // Keep the message channel open for asynchronous responses
-})

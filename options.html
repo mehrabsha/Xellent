@@ -15,26 +15,12 @@
         <!-- General Settings -->
         <div class="mb-6 pb-4 border-b border-gray-200">
             <h2 class="text-2xl font-semibold mb-4 text-gray-700">General</h2>
-            <div class="mb-4">
-                <label for="autoStart" class="flex items-center cursor-pointer">
-                    <input type="checkbox" id="autoStart" class="form-checkbox h-5 w-5 text-blue-600 rounded-md">
-                    <span class="ml-2 text-gray-700">Enable extension features automatically on X.com</span>
-                </label>
+             <div class="mb-4">
+                <label for="apikey" class="block text-sm font-medium text-gray-700 mb-2">OpenRouter API Key : </label>
+                <input type="string" id="apikey" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Enter your OpenRouter API key" required>
             </div>
         </div>
 
-        <!-- Like Posts Settings -->
-        <div class="mb-6 pb-4 border-b border-gray-200">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Like Posts</h2>
-            <div class="mb-4">
-                <label for="likeKeywords" class="block text-sm font-medium text-gray-700 mb-2">Keywords for liking (comma-separated):</label>
-                <textarea id="likeKeywords" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" rows="3" placeholder="e.g., AI, machine learning, tech news"></textarea>
-            </div>
-            <div class="mb-4">
-                <label for="minFollowers" class="block text-sm font-medium text-gray-700 mb-2">Minimum followers for account to like:</label>
-                <input type="number" id="minFollowers" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" min="0" value="0">
-            </div>
-        </div>
 
         <!-- Reply Suggestions Settings -->
         <div class="mb-6 pb-4 border-b border-gray-200">
@@ -71,14 +57,7 @@
             </div>
         </div>
 
-        <!-- Activity Analysis Settings -->
-        <div class="mb-6 pb-4 border-b border-gray-200">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Activity Analysis</h2>
-            <div class="mb-4">
-                <label for="analysisDepth" class="block text-sm font-medium text-gray-700 mb-2">Depth of analysis (number of recent posts):</label>
-                <input type="number" id="analysisDepth" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" min="50" max="500" value="100">
-            </div>
-        </div>
+     
 
         <button id="saveSettingsBtn" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out text-lg font-semibold">
             Save Settings
