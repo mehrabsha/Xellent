@@ -1,5 +1,13 @@
+@font-face {
+  font-family: 'TwitterChirp';
+  src: url('https://abs.twimg.com/fonts/v1/chirp-regular-web.woff2') format('woff2'),
+       url('https://abs.twimg.com/fonts/v1/chirp-regular-web.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'TwitterChirp', sans-serif;
 }
 button {
   border-radius: 0.5rem; /* rounded-md */

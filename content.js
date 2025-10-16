@@ -1,5 +1,3 @@
-console.log('Xpressive content script loaded.')
-
 function injectUI() {
   const tweets = document.querySelectorAll('article[data-testid="tweet"]')
 
@@ -13,8 +11,7 @@ function injectUI() {
 
       const replySuggestBtn = document.createElement('button')
       replySuggestBtn.textContent = 'Suggest Reply'
-      replySuggestBtn.className =
-        'xpressive-btn xpressive-btn-purple transition duration-150 ease-in-out'
+      replySuggestBtn.className = 'xpressive-btn xpressive-btn-reply'
       replySuggestBtn.addEventListener('click', () =>
         handleReplySuggestion(tweet)
       )
@@ -51,7 +48,15 @@ async function handleReplySuggestion(tweetElement) {
     return
   }
 
-  showCustomMessage('Generating reply suggestion...')
+  // Disable button and show loading state
+  const btn = tweetElement.querySelector('.xpressive-btn-reply')
+  if (btn) {
+    btn.disabled = true
+    btn.innerHTML =
+      '<div class="loading-spinner" style="width: 12px; height: 12px; border: 1px solid #536471; border-top: 1px solid #1d9bf0; position: inline-block;"></div> Generating...'
+  }
+
+  showCustomMessage('Generating reply suggestion...', true)
   const prompt = `
 
 Generate 5 different Twitter replies that sound like real people texting, with customizable style parameters for precise control over tone and approach.
@@ -151,13 +156,18 @@ Reply: "Always happens at the worst times too"
 **Parameters**: Formality: ${toneParams.formality}, Sass: ${toneParams.sass}, Engagement: ${toneParams.engagement}, Humor: ${toneParams.humor}, Relatability: ${toneParams.relatability}
 
 `
-  console.log(`Requesting reply suggestion for: "${tweetText}"`)
 
   chrome.runtime.sendMessage(
     { action: 'getReplySuggestions', prompt: prompt },
     (response) => {
+      // Re-enable button and restore original text
+      const btn = tweetElement.querySelector('.xpressive-btn-reply')
+      if (btn) {
+        btn.disabled = false
+        btn.textContent = 'Suggest Reply'
+      }
+
       if (response && response.status === 'success' && response.suggestion) {
-        console.log('Reply suggestion:', response.suggestion)
         displayReplySuggestion(tweetElement, response.suggestion, 'reply')
         showCustomMessage('Reply suggestion ready!')
       } else {
@@ -176,6 +186,29 @@ async function getToneParams() {
   })
 }
 
+function createCopyHandler(suggestion, tweetElement) {
+  return () => {
+    const textarea = document.createElement('textarea')
+    textarea.value = suggestion
+    textarea.style.position = 'absolute'
+    textarea.style.left = '-9999px'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    showCustomMessage('Suggestion copied to clipboard!')
+
+    const tweetReplyButton = tweetElement.querySelector(
+      'button[data-testid="reply"]'
+    )
+
+    if (tweetReplyButton) {
+      tweetReplyButton.click()
+      showCustomMessage('Opening reply modal...')
+    }
+  }
+}
+
 function displaySuggestion(tweetElement, suggestion, type) {
   let suggestionArea = tweetElement.querySelector(
     `.xpressive-${type}-suggestion`
@@ -191,107 +224,101 @@ function displaySuggestion(tweetElement, suggestion, type) {
                                 <button class="copy-suggestion-btn">Copy</button>`
   suggestionArea
     .querySelector('.copy-suggestion-btn')
-    .addEventListener('click', () => {
-      const textarea = document.createElement('textarea')
-      textarea.value = suggestion
-      textarea.style.position = 'absolute'
-      textarea.style.left = '-9999px'
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-      showCustomMessage('Suggestion copied to clipboard!')
+    .addEventListener('click', createCopyHandler(suggestion, tweetElement))
+}
 
-      const tweetReplyButton = tweetElement.querySelector(
-        'button[data-testid="reply"]'
-      )
+function createUseHandler(suggestion, tweetElement) {
+  return () => {
+    const textarea = document.createElement('textarea')
+    textarea.value = suggestion
+    textarea.style.position = 'absolute'
+    textarea.style.left = '-9999px'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    showCustomMessage('Suggestion copied to clipboard!')
 
-      if (tweetReplyButton) {
-        tweetReplyButton.click()
-        showCustomMessage('Opening reply modal...')
-      }
-    })
+    const tweetReplyButton = tweetElement.querySelector(
+      'button[data-testid="reply"]'
+    )
+    const tweetLikeButton = tweetElement.querySelector(
+      'button[data-testid="like"]'
+    )
+    if (tweetReplyButton && tweetLikeButton) {
+      tweetLikeButton.click()
+      tweetReplyButton.click()
+      showCustomMessage('Opening reply modal...')
+    }
+  }
 }
 
 function displayReplySuggestion(tweetElement, suggestions, type) {
   const suggestionsArray = Object.values(JSON.parse(suggestions))
-  console.log(suggestionsArray)
+  let suggestionArea = tweetElement.querySelector(
+    `.xpressive-${type}-suggestion`
+  )
 
-  for (let i = 0; i < suggestionsArray.length; i++) {
-    let suggestion = suggestionsArray[i].trim()
-    let suggestionArea = tweetElement.querySelector(
-      `.xpressive-${type}-suggestion`
-    )
+  if (!suggestionArea) {
+    suggestionArea = document.createElement('div')
+    suggestionArea.className = `xpressive-${type}-suggestion`
+    tweetElement.appendChild(suggestionArea)
+  }
 
-    if (!suggestionArea) {
-      suggestionArea = document.createElement('div')
-      suggestionArea.className = `xpressive-${type}-suggestion`
-      tweetElement.appendChild(suggestionArea)
-    }
-
+  suggestionsArray.forEach((suggestion) => {
     const suggestionContainer = document.createElement('div')
-
     const suggestionParagraph = document.createElement('p')
-    suggestionParagraph.textContent = suggestion
+    suggestionParagraph.textContent = suggestion.trim()
 
     const copyButton = document.createElement('button')
     copyButton.className = 'copy-suggestion-btn'
     copyButton.textContent = 'Use'
 
-    copyButton.addEventListener('click', () => {
-      const textarea = document.createElement('textarea')
-      textarea.value = suggestion
-      textarea.style.position = 'absolute'
-      textarea.style.left = '-9999px'
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-      showCustomMessage('Suggestion copied to clipboard!')
-
-      const tweetReplyButton = tweetElement.querySelector(
-        'button[data-testid="reply"]'
-      )
-      const tweetLikeButton = tweetElement.querySelector(
-        'button[data-testid="like"]'
-      )
-      if (tweetReplyButton && tweetLikeButton) {
-        tweetLikeButton.click()
-        tweetReplyButton.click()
-        showCustomMessage('Opening reply modal...')
-      }
-    })
+    copyButton.addEventListener(
+      'click',
+      createUseHandler(suggestion.trim(), tweetElement)
+    )
 
     suggestionContainer.appendChild(suggestionParagraph)
     suggestionContainer.appendChild(copyButton)
-
     suggestionArea.appendChild(suggestionContainer)
-  }
+  })
 }
 
-function showCustomMessage(message, duration = 3000) {
+function showCustomMessage(message, isLoading = false, duration = 3000) {
   let messageBox = document.getElementById('xpressive-message-box')
   if (!messageBox) {
     messageBox = document.createElement('div')
     messageBox.id = 'xpressive-message-box'
     messageBox.className = ''
-    const newbox = document.body.appendChild(messageBox)
-    console.log('Created message box:', newbox)
+    document.body.appendChild(messageBox)
   }
-  messageBox.textContent = message
+
+  if (isLoading) {
+    messageBox.innerHTML = `
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <span>${message}</span>
+      </div>
+    `
+  } else {
+    messageBox.textContent = message
+  }
+
   messageBox.classList.remove('hidden')
   messageBox.classList.add('opacity-100')
 
-  setTimeout(() => {
+  if (!isLoading) {
     setTimeout(() => {
-      messageBox.classList.add('hidden')
-    }, 300)
-  }, duration)
+      setTimeout(() => {
+        messageBox.classList.add('hidden')
+      }, 300)
+    }, duration)
+  }
 }
 
 async function getPostIdeas() {
-  console.log('Requesting post ideas...')
-  showCustomMessage('Generating post ideas...')
+  showCustomMessage('Generating post ideas...', true)
 
   const prompt = `Suggest 3 unique and engaging X post ideas about ${await getUserInterests()}.`
 
@@ -299,7 +326,6 @@ async function getPostIdeas() {
     { action: 'getPostIdeas', prompt: prompt },
     (response) => {
       if (response && response.status === 'success' && response.idea) {
-        console.log('Post ideas:', response.idea)
         displaySuggestion(document.body, response.idea, 'post')
         showCustomMessage('Post ideas ready!')
       } else {
@@ -319,7 +345,6 @@ async function getUserInterests() {
 }
 
 function analyzeActivity() {
-  console.log('Starting activity analysis...')
   showCustomMessage('Analyzing activity...')
   const feedPosts = document.querySelectorAll('article[data-testid="tweet"]')
   const categories = {}
@@ -339,7 +364,6 @@ function analyzeActivity() {
   })
 
   let total = Object.values(categories).reduce((sum, count) => sum + count, 0)
-  console.log('Activity Analysis Results:')
   for (const category in categories) {
     const percentage = ((categories[category] / total) * 100).toFixed(2)
     console.log(`${category}: ${categories[category]} posts (${percentage}%)`)

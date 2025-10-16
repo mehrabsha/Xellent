@@ -3,18 +3,14 @@ chrome.runtime.onInstalled.addListener(() => {
 })
 
 async function getApiKey() {
-  console.log('00')
   try {
-    console.log('0')
     return new Promise((resolve) => {
       chrome.storage.sync.get('apikey', (data) => {
-        console.log('Retrieving API key from storage:', data)
-
         data.apikey ? resolve(data.apikey) : resolve(null)
       })
     })
   } catch (error) {
-    console.log(error)
+    console.error('Error retrieving API key:', error)
   }
 }
 
@@ -34,12 +30,8 @@ async function getReplyLength() {
   })
 }
 async function callOpenrouter(prompt, model) {
-  console.log('1')
-
   const apiKey = await getApiKey()
   const apiUrl = 'https://openrouter.ai/api/v1/chat/completions'
-
-  console.log('apiKey', apiKey)
 
   if (!apiKey) {
     console.error('API key not found. Please set it in the extension options.')
@@ -84,21 +76,12 @@ async function callOpenrouter(prompt, model) {
 
 // Listen for messages from popup or content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Background script received message:', request.action)
-  console.log('2')
-
   if (
     request.action === 'getReplySuggestions' ||
     request.action === 'getPostIdeas'
   ) {
-    console.log('3')
     ;(async () => {
       const prompt = request.prompt
-      console.log(
-        `Received LLM request for: ${request.action} with prompt: "${prompt}"`
-      )
-
-      console.log('4')
       const modelName = await getModelName()
       const replyLength = await getReplyLength()
 
