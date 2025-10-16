@@ -43,6 +43,7 @@ async function handleReplySuggestion(tweetElement) {
   const tweetText =
     tweetElement.querySelector('div[data-testid="tweetText"]')?.innerText || ''
   tweetElement.style.flexDirection = 'column'
+  const toneParams = await getToneParams()
 
   if (!tweetText) {
     console.warn('Could not find tweet text for reply suggestion.')
@@ -53,58 +54,102 @@ async function handleReplySuggestion(tweetElement) {
   showCustomMessage('Generating reply suggestion...')
   const prompt = `
 
+Generate 5 different Twitter replies that sound like real people texting, with customizable style parameters for precise control over tone and approach.
 
-Generate 5 different Twitter replies that sound like real people texting. Keep each reply between 5-25 words and avoid overusing punctuation.
+## Parameters (Scale 1-10)
+
+**Formality Level** (1-10):
+- 1-3: Very casual, internet slang, abbreviations (ur, rn, ngl)
+- 4-6: Natural conversational tone, balanced formality
+- 7-10: More polished, complete sentences, professional language
+
+**Sass/Attitude Level** (1-10):
+- 1-3: Supportive, gentle, encouraging responses
+- 4-6: Balanced, natural reactions with mild edge when appropriate
+- 7-10: Sharp, witty, sarcastic, potentially confrontational
+
+**Engagement Style** (1-10):
+- 1-3: Brief acknowledgments, minimal investment
+- 4-6: Standard engagement, some personal input
+- 7-10: Highly engaged, detailed responses, personal anecdotes
+
+**Humor Level** (1-10):
+- 1-3: Serious, straightforward, minimal jokes
+- 4-6: Light humor when contextually appropriate
+- 7-10: Comedy-focused, witty observations, meme references
+
+**Relatability Factor** (1-10):
+- 1-3: Distant, observational responses
+- 4-6: Some shared experiences, moderate connection
+- 7-10: Highly relatable, "same energy," shared struggles
 
 ## Core Rules
-- First understand the tweets real meaning and tone - is it sarcastic educational complaining joking motivational etc
-- Match that exact energy and context in your reply
-- Find the balance between too formal and too casual - sound natural but not overly chatty
-- Minimal punctuation - real people dont pepper texts with commas and periods  
-- No exclamation marks hyphens or corporate words like absolutely totally amazing
-- Skip questions unless they sound completely natural
-- Be specific instead of using this that it
+- First understand the tweet's real meaning and tone - is it sarcastic, educational, complaining, joking, motivational etc
+- Match that exact energy and context in your reply, modified by parameter settings
+- Find the balance between too formal and too casual based on Formality Level
+- Minimal punctuation - real people don't pepper texts with commas and periods  
+- Adjust exclamation marks and corporate language based on Formality Level
+- Question usage depends on Engagement Style level
+- Be specific instead of using "this," "that," "it"
 
-## Reply Styles
-Read the original tweet carefully to understand if its:
-- **Sarcastic/Snarky**: Match the sarcasm without being mean
-- **Educational**: Add value or share related knowledge  
-- **Complaining**: Relate to their frustration appropriately
-- **Joking**: Play along with the humor naturally
-- **Motivational**: Support without being preachy
-- **Controversial**: Respond thoughtfully not reactively
-- **Personal story**: Share similar experience or relate
-- **Asking for help**: Offer genuine useful input
+## Reply Styles (Adjusted by Parameters)
+Read the original tweet carefully to understand if it's:
+- **Sarcastic/Snarky**: Match sarcasm level to Sass parameter
+- **Educational**: Engagement level determines depth of response  
+- **Complaining**: Relatability factor influences how much you relate
+- **Joking**: Humor level determines how much you play along
+- **Motivational**: Formality and Sass levels affect supportiveness style
+- **Controversial**: All parameters influence response approach
+- **Personal story**: Relatability and Engagement determine connection level
+- **Asking for help**: Engagement and Formality shape helpfulness style
 
-## Natural Balance
-- Not too formal like a business email
-- Not too casual like texting your best friend  
-- Sound like a normal person who understands context
-- Match the tweets energy level - dont be overly excited for a calm post
-- If someones being sarcastic dont respond with genuine enthusiasm
-- If someones sharing knowledge dont just say cool thanks
+## Natural Balance Guidelines
+- Formality 1-3: Text speak, fragments, very casual
+- Formality 4-6: Natural conversation, standard grammar
+- Formality 7-10: Complete sentences, proper punctuation
 
-## Examples
+- Sass 1-3: Kind, supportive, gentle
+- Sass 4-6: Balanced reactions, appropriate edge
+- Sass 7-10: Sharp wit, sarcasm, confrontational when warranted
 
-**Tweet**: "Can't believe how quickly the weekend flew by!"
-**Replies**: 
-- "Monday always shows up uninvited"
-- "Weekends are basically a scam at this point"
-- "Time moves different on weekends I swear"
+- Engagement 1-3: "ok," "nice," "cool"
+- Engagement 4-6: Standard responses with some input
+- Engagement 7-10: Detailed thoughts, questions, personal shares
 
-**Tweet**: "Just finished my first marathon and I'm still buzzing with excitement!"
-**Replies**:
-- "26.2 miles is no joke well done"
-- "Your legs probably hate you right now"
-- "First marathon hits different"
+## Parameter Examples
+
+**High Formality (8), Low Sass (2), Medium Engagement (5)**
+Tweet: "Traffic is insane today"
+Reply: "I completely understand that frustration. Hope it clears up soon for you."
+
+**Low Formality (3), High Sass (8), High Engagement (7)**  
+Tweet: "Traffic is insane today"
+Reply: "lmao traffic said nah ur not getting anywhere today huh"
+
+**Medium Everything (5,5,5)**
+Tweet: "Traffic is insane today" 
+Reply: "Always happens at the worst times too"
 
 ## Output Format
-Return exactly 5 replies in this format:
-[reply1, reply2, reply3, reply4, reply5]
+{
+  "reply1": "Your first reply here",
+  "reply2": "Your second reply here",
+  "reply3": "Your third reply here",
+  "reply4": "Your fourth reply here",
+  "reply5": "Your fifth reply here"
+}
 
 ---
 
+**Usage Instructions**:
+1. Set your desired parameters (1-10 for each)
+2. Provide the original tweet
+3. Generator will create 5 replies matching your parameter settings
+4. Default parameters if not specified: Formality: 5, Sass: 4, Engagement: 5, Humor: 5, Relatability: 6
+
 **Original Tweet**: "${tweetText}"
+**Parameters**: Formality: ${toneParams.formality}, Sass: ${toneParams.sass}, Engagement: ${toneParams.engagement}, Humor: ${toneParams.humor}, Relatability: ${toneParams.relatability}
+
 `
   console.log(`Requesting reply suggestion for: "${tweetText}"`)
 
@@ -123,10 +168,10 @@ Return exactly 5 replies in this format:
   )
 }
 
-async function getUserTone() {
+async function getToneParams() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get('toneSetting', (data) => {
-      resolve(data.toneSetting || 'friendly') // Default to friendly
+    chrome.storage.sync.get('toneParams', (data) => {
+      resolve(data.toneParams)
     })
   })
 }
@@ -169,7 +214,7 @@ function displaySuggestion(tweetElement, suggestion, type) {
 }
 
 function displayReplySuggestion(tweetElement, suggestions, type) {
-  const suggestionsArray = suggestions.replace(/['"\]\[]+/g, '').split(',')
+  const suggestionsArray = Object.values(JSON.parse(suggestions))
   console.log(suggestionsArray)
 
   for (let i = 0; i < suggestionsArray.length; i++) {

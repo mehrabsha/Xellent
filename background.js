@@ -17,8 +17,23 @@ async function getApiKey() {
     console.log(error)
   }
 }
-async function callOpenrouter(prompt, model = 'openai/gpt-4o-mini') {
-  // Default model
+
+async function getModelName() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get('modelName', (data) => {
+      resolve(data.modelName || 'openai/gpt-4o-mini')
+    })
+  })
+}
+
+async function getReplyLength() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get('replyLength', (data) => {
+      resolve(data.replyLength !== undefined ? data.replyLength : 50)
+    })
+  })
+}
+async function callOpenrouter(prompt, model) {
   console.log('1')
 
   const apiKey = await getApiKey()
@@ -84,7 +99,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       )
 
       console.log('4')
-      const llmResponse = await callOpenrouter(prompt)
+      const modelName = await getModelName()
+      const replyLength = await getReplyLength()
+
+      let enhancedPrompt = prompt
+      if (request.action === 'getReplySuggestions') {
+        enhancedPrompt += ` Keep the reply under ${replyLength} words.`
+      }
+
+      const llmResponse = await callOpenrouter(enhancedPrompt, modelName)
 
       if (llmResponse) {
         if (request.action === 'getReplySuggestions') {
