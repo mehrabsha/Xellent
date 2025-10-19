@@ -192,27 +192,57 @@ async function getToneParams() {
   })
 }
 
-function createCopyHandler(suggestion, tweetElement) {
-  return () => {
-    const textarea = document.createElement('textarea')
-    textarea.value = suggestion
-    textarea.style.position = 'absolute'
-    textarea.style.left = '-9999px'
-    document.body.appendChild(textarea)
-    textarea.select()
-    document.execCommand('copy')
-    document.body.removeChild(textarea)
-    showCustomMessage('Suggestion copied to clipboard!')
+function copyToClipboard(text) {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'absolute'
+  textarea.style.left = '-9999px'
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(textarea)
+  showCustomMessage('Suggestion copied to clipboard!')
+}
 
-    const tweetReplyButton = tweetElement.querySelector(
-      'button[data-testid="reply"]'
-    )
+function createSuggestionCard(suggestion, buttonText, handler) {
+  const container = document.createElement('div')
+  container.style.cssText = `
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #2f3336;
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'TwitterChirp';
+    display: flex;
+    justify-content: space-between;
+  `
 
-    if (tweetReplyButton) {
-      tweetReplyButton.click()
-      showCustomMessage('Opening reply modal...')
-    }
-  }
+  const textElement = document.createElement('p')
+  textElement.textContent = suggestion.trim()
+  textElement.style.cssText = `
+    margin: 0 0 10px 0;
+    line-height: 1.5;
+    color: #fff;
+  `
+
+  const button = document.createElement('button')
+  button.className = 'copy-suggestion-btn'
+  button.textContent = buttonText
+  button.style.cssText = `
+    background: #fff;
+    color: #0f1419;
+    font-weight: 700;   
+    border: none;
+    padding: 6px 12px;
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 12px;
+  `
+  button.addEventListener('click', handler)
+
+  container.appendChild(textElement)
+  container.appendChild(button)
+  return container
 }
 
 function displaySuggestion(tweetElement, suggestion, type) {
@@ -224,39 +254,25 @@ function displaySuggestion(tweetElement, suggestion, type) {
     suggestionArea.className = `xpressive-${type}-suggestion`
     tweetElement.appendChild(suggestionArea)
   }
-  suggestionArea.innerHTML = `<p class="font-semibold">${
-    type === 'reply' ? 'Suggested Reply:' : 'Suggested Idea:'
-  }</p><p>${suggestion}</p>
-                                <button class="copy-suggestion-btn">Copy</button>`
-  suggestionArea
-    .querySelector('.copy-suggestion-btn')
-    .addEventListener('click', createCopyHandler(suggestion, tweetElement))
-}
 
-function createUseHandler(suggestion, tweetElement) {
-  return () => {
-    const textarea = document.createElement('textarea')
-    textarea.value = suggestion
-    textarea.style.position = 'absolute'
-    textarea.style.left = '-9999px'
-    document.body.appendChild(textarea)
-    textarea.select()
-    document.execCommand('copy')
-    document.body.removeChild(textarea)
-    showCustomMessage('Suggestion copied to clipboard!')
+  const title = document.createElement('p')
+  title.className = 'font-semibold'
+  title.textContent = type === 'reply' ? 'Suggested Reply:' : 'Suggested Idea:'
 
+  const card = createSuggestionCard(suggestion, 'Copy', () => {
+    copyToClipboard(suggestion)
     const tweetReplyButton = tweetElement.querySelector(
       'button[data-testid="reply"]'
     )
-    const tweetLikeButton = tweetElement.querySelector(
-      'button[data-testid="like"]'
-    )
-    if (tweetReplyButton && tweetLikeButton) {
-      tweetLikeButton.click()
+    if (tweetReplyButton) {
       tweetReplyButton.click()
       showCustomMessage('Opening reply modal...')
     }
-  }
+  })
+
+  suggestionArea.innerHTML = ''
+  suggestionArea.appendChild(title)
+  suggestionArea.appendChild(card)
 }
 
 function displayReplySuggestion(tweetElement, suggestions, type) {
@@ -271,30 +287,28 @@ function displayReplySuggestion(tweetElement, suggestions, type) {
     tweetElement.appendChild(suggestionArea)
   }
 
+  suggestionArea.innerHTML = ''
+
   suggestionsArray.forEach((suggestion) => {
-    const suggestionContainer = document.createElement('div')
-    const suggestionParagraph = document.createElement('p')
-    suggestionParagraph.textContent = suggestion.trim()
-
-    const copyButton = document.createElement('button')
-    copyButton.className = 'copy-suggestion-btn'
-    copyButton.textContent = 'Use'
-
-    copyButton.addEventListener(
-      'click',
-      createUseHandler(suggestion.trim(), tweetElement)
-    )
-
-    suggestionContainer.appendChild(suggestionParagraph)
-    suggestionContainer.appendChild(copyButton)
-    suggestionArea.appendChild(suggestionContainer)
+    const card = createSuggestionCard(suggestion.trim(), 'Use', () => {
+      copyToClipboard(suggestion.trim())
+      const tweetReplyButton = tweetElement.querySelector(
+        'button[data-testid="reply"]'
+      )
+      const tweetLikeButton = tweetElement.querySelector(
+        'button[data-testid="like"]'
+      )
+      if (tweetReplyButton && tweetLikeButton) {
+        tweetLikeButton.click()
+        tweetReplyButton.click()
+        showCustomMessage('Opening reply modal...')
+      }
+    })
+    suggestionArea.appendChild(card)
   })
 }
 
-function displayImprovedSuggestion(textareaLabel, improvedText) {
-  const improvementsArray = Object.values(JSON.parse(improvedText))
-
-  // Create popup overlay
+function createPopupOverlay() {
   const popupOverlay = document.createElement('div')
   popupOverlay.className = 'xpressive-popup-overlay'
   popupOverlay.style.cssText = `
@@ -309,8 +323,10 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
     align-items: center;
     z-index: 10000;
   `
+  return popupOverlay
+}
 
-  // Create popup content
+function createPopupContent() {
   const popupContent = document.createElement('div')
   popupContent.className = 'xpressive-popup-content'
   popupContent.style.cssText = `
@@ -323,8 +339,10 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
     overflow-y: auto;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   `
+  return popupContent
+}
 
-  // Close button
+function createCloseButton(onClose) {
   const closeButton = document.createElement('button')
   closeButton.textContent = '×'
   closeButton.style.cssText = `
@@ -336,117 +354,57 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
     font-size: 24px;
     cursor: pointer;
   `
-  closeButton.addEventListener('click', () => {
-    document.body.removeChild(popupOverlay)
-  })
+  closeButton.addEventListener('click', onClose)
+  return closeButton
+}
 
-  // Title
-  const title = document.createElement('h3')
-  title.textContent = 'Improved Text Suggestions'
-  title.style.cssText = `
-    margin: 0 0 15px 0;
-    color: #333;
-  `
+function applyTextToTextarea(text) {
+  const textarea =
+    document.querySelector('[data-testid="tweetTextarea_0"]') ||
+    document.querySelector('[role="textbox"][contenteditable="true"]') ||
+    document.querySelector('div[data-testid="tweetTextarea_0"]')
 
-  // Create container for suggestions
-  const suggestionsContainer = document.createElement('div')
-  suggestionsContainer.style.cssText = `
-    margin-bottom: 20px;
-  `
+  if (textarea) {
+    if (textarea.tagName === 'TEXTAREA' || textarea.tagName === 'INPUT') {
+      textarea.value = text
+      textarea.dispatchEvent(new Event('input', { bubbles: true }))
+    } else if (textarea.contentEditable === 'true') {
+      textarea.focus()
+      const selection = window.getSelection()
+      const range = document.createRange()
+      range.selectNodeContents(textarea)
+      selection.removeAllRanges()
+      selection.addRange(range)
+      document.execCommand('insertText', false, text)
+    }
+  }
+}
 
-  improvementsArray.forEach((improvement, index) => {
-    const suggestionDiv = document.createElement('div')
-    suggestionDiv.style.cssText = `
-      margin-bottom: 15px;
-      padding: 10px;
-      border: 1px solid #e1e8ed;
-      border-radius: 4px;
-      background: #f7f9fa;
-    `
+function displayImprovedSuggestion(textareaLabel, improvedText) {
+  const improvementsArray = Object.values(JSON.parse(improvedText))
 
-    const suggestionText = document.createElement('p')
-    suggestionText.textContent = improvement.trim()
-    suggestionText.style.cssText = `
-      margin: 0 0 10px 0;
-      line-height: 1.5;
-      color: #555;
-    `
+  // Remove any existing suggestions
+  const existingSuggestions = textareaLabel.parentNode.querySelectorAll(
+    '.xpressive-improve-suggestions'
+  )
+  existingSuggestions.forEach((suggestion) => suggestion.remove())
 
-    const copyButton = document.createElement('button')
-    copyButton.className = 'copy-suggestion-btn'
-    copyButton.textContent = 'Copy'
-    copyButton.style.cssText = `
-      background: #1d9bf0;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    `
-
-    copyButton.addEventListener('click', () => {
-      // Find the actual textarea/input and update its value
-      const textarea =
-        document.querySelector('[data-testid="tweetTextarea_0"]') ||
-        document.querySelector('[role="textbox"][contenteditable="true"]') ||
-        document.querySelector('div[data-testid="tweetTextarea_0"]')
-
-      if (textarea) {
-        if (textarea.tagName === 'TEXTAREA' || textarea.tagName === 'INPUT') {
-          textarea.value = improvement.trim()
-          textarea.dispatchEvent(new Event('input', { bubbles: true }))
-        } else if (textarea.contentEditable === 'true') {
-          textarea.focus()
-          const selection = window.getSelection()
-          const range = document.createRange()
-          range.selectNodeContents(textarea)
-          selection.removeAllRanges()
-          selection.addRange(range)
-          document.execCommand('insertText', false, improvement.trim())
-        }
-      }
-
-      document.body.removeChild(popupOverlay)
+  // Add suggestions directly below the textarea label
+  improvementsArray.forEach((improvement) => {
+    const card = createSuggestionCard(improvement.trim(), 'Use', () => {
+      applyTextToTextarea(improvement.trim())
+      // Remove all suggestions after use
+      const allSuggestions = textareaLabel.parentNode.querySelectorAll(
+        '.xpressive-improve-suggestions'
+      )
+      allSuggestions.forEach((suggestion) => suggestion.remove())
       showCustomMessage('Improved text applied!')
     })
-
-    suggestionDiv.appendChild(suggestionText)
-    suggestionDiv.appendChild(copyButton)
-    suggestionsContainer.appendChild(suggestionDiv)
-  })
-
-  // Cancel button
-  const cancelButton = document.createElement('button')
-  cancelButton.textContent = 'Cancel'
-  cancelButton.style.cssText = `
-    background: #ccc;
-    color: #333;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-  `
-  cancelButton.addEventListener('click', () => {
-    document.body.removeChild(popupOverlay)
-  })
-
-  // Assemble popup
-  popupContent.appendChild(closeButton)
-  popupContent.appendChild(title)
-  popupContent.appendChild(suggestionsContainer)
-  popupContent.appendChild(cancelButton)
-  popupOverlay.appendChild(popupContent)
-
-  // Add to body
-  document.body.appendChild(popupOverlay)
-
-  // Close on overlay click
-  popupOverlay.addEventListener('click', (e) => {
-    if (e.target === popupOverlay) {
-      document.body.removeChild(popupOverlay)
-    }
+    card.className += ' xpressive-improve-suggestions'
+    textareaLabel.parentNode.parentNode.insertBefore(
+      card,
+      textareaLabel.nextSibling
+    )
   })
 }
 
