@@ -29,6 +29,21 @@ function injectUI() {
       }
     }
   })
+
+  // Add improve button to tweet textarea label
+  const textareaLabel = document.querySelector(
+    '[data-testid="tweetTextarea_0_label"]'
+  )
+  if (textareaLabel && !textareaLabel.dataset.improveProcessed) {
+    textareaLabel.dataset.improveProcessed = 'true'
+
+    const improveBtn = document.createElement('button')
+    improveBtn.textContent = 'improve'
+    improveBtn.className = 'xpressive-btn xpressive-btn-improve'
+    improveBtn.addEventListener('click', () => handleImproveText(textareaLabel))
+
+    textareaLabel.appendChild(improveBtn)
+  }
 }
 
 const observer = new MutationObserver(injectUI)
@@ -285,6 +300,142 @@ function displayReplySuggestion(tweetElement, suggestions, type) {
   })
 }
 
+function displayImprovedSuggestion(textareaLabel, improvedText) {
+  // Create popup overlay
+  const popupOverlay = document.createElement('div')
+  popupOverlay.className = 'xpressive-popup-overlay'
+  popupOverlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  `
+
+  // Create popup content
+  const popupContent = document.createElement('div')
+  popupContent.className = 'xpressive-popup-content'
+  popupContent.style.cssText = `
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  `
+
+  // Close button
+  const closeButton = document.createElement('button')
+  closeButton.textContent = '×'
+  closeButton.style.cssText = `
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+  `
+  closeButton.addEventListener('click', () => {
+    document.body.removeChild(popupOverlay)
+  })
+
+  // Title
+  const title = document.createElement('h3')
+  title.textContent = 'Improved Text Suggestion'
+  title.style.cssText = `
+    margin: 0 0 15px 0;
+    color: #333;
+  `
+
+  // Suggestion text
+  const suggestionParagraph = document.createElement('p')
+  suggestionParagraph.textContent = improvedText.trim()
+  suggestionParagraph.style.cssText = `
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+    color: #555;
+  `
+
+  // Use button
+  const useButton = document.createElement('button')
+  useButton.className = 'copy-suggestion-btn'
+  useButton.textContent = 'Use This Text'
+  useButton.style.cssText = `
+    background: #1d9bf0;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+  `
+
+  useButton.addEventListener('click', () => {
+    // Find the actual textarea/input and update its value
+    const textarea =
+      document.querySelector('[data-testid="tweetTextarea_0"]') ||
+      document.querySelector('[role="textbox"][contenteditable="true"]') ||
+      document.querySelector('div[data-testid="tweetTextarea_0"]')
+
+    if (textarea) {
+      if (textarea.tagName === 'TEXTAREA' || textarea.tagName === 'INPUT') {
+        textarea.value = improvedText.trim()
+        textarea.dispatchEvent(new Event('input', { bubbles: true }))
+      } else if (textarea.contentEditable === 'true') {
+        textarea.focus()
+        const selection = window.getSelection()
+        const range = document.createRange()
+        range.selectNodeContents(textarea)
+        selection.removeAllRanges()
+        selection.addRange(range)
+        document.execCommand('insertText', false, improvedText.trim())
+      }
+    }
+
+    document.body.removeChild(popupOverlay)
+    showCustomMessage('Improved text applied!')
+  })
+
+  // Cancel button
+  const cancelButton = document.createElement('button')
+  cancelButton.textContent = 'Cancel'
+  cancelButton.style.cssText = `
+    background: #ccc;
+    color: #333;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  `
+  cancelButton.addEventListener('click', () => {
+    document.body.removeChild(popupOverlay)
+  })
+
+  // Assemble popup
+  popupContent.appendChild(closeButton)
+  popupContent.appendChild(title)
+  popupContent.appendChild(suggestionParagraph)
+  popupContent.appendChild(useButton)
+  popupContent.appendChild(cancelButton)
+  popupOverlay.appendChild(popupContent)
+
+  // Add to body
+  document.body.appendChild(popupOverlay)
+
+  // Close on overlay click
+  popupOverlay.addEventListener('click', (e) => {
+    if (e.target === popupOverlay) {
+      document.body.removeChild(popupOverlay)
+    }
+  })
+}
+
 function showCustomMessage(message, isLoading = false, duration = 3000) {
   let messageBox = document.getElementById('xpressive-message-box')
   if (!messageBox) {
@@ -342,6 +493,41 @@ async function getUserInterests() {
       resolve(data.interestsSetting || 'technology and social media')
     })
   })
+}
+
+async function handleImproveText(textareaLabel) {
+  const textSpan = textareaLabel.querySelector('span[data-text="true"]')
+  if (!textSpan) {
+    showCustomMessage('Could not find text to improve.')
+    return
+  }
+
+  const originalText = textSpan.textContent || ''
+  if (!originalText.trim()) {
+    showCustomMessage('No text to improve.')
+    return
+  }
+
+  showCustomMessage('Improving text...', true)
+
+  const prompt = `Improve the following text to make it more engaging, clear, and professional while keeping its original meaning and intent. Make it concise but impactful:
+
+Original text: "${originalText}"
+
+Improved version:`
+
+  chrome.runtime.sendMessage(
+    { action: 'improveText', prompt: prompt },
+    (response) => {
+      if (response && response.status === 'success' && response.improvedText) {
+        displayImprovedSuggestion(textareaLabel, response.improvedText)
+        showCustomMessage('Text improved!')
+      } else {
+        console.error('Failed to improve text:', response)
+        showCustomMessage('Failed to improve text.')
+      }
+    }
+  )
 }
 
 function analyzeActivity() {

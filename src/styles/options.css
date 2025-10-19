@@ -1,0 +1,5 @@
+@import url('common.css');
+
+input[type='checkbox'] {
+  accent-color: #3b82f6; /* Tailwind blue-600 */
+}

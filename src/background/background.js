@@ -78,7 +78,8 @@ async function callOpenrouter(prompt, model) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (
     request.action === 'getReplySuggestions' ||
-    request.action === 'getPostIdeas'
+    request.action === 'getPostIdeas' ||
+    request.action === 'improveText'
   ) {
     ;(async () => {
       const prompt = request.prompt
@@ -97,6 +98,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ status: 'success', suggestion: llmResponse })
         } else if (request.action === 'getPostIdeas') {
           sendResponse({ status: 'success', idea: llmResponse })
+        } else if (request.action === 'improveText') {
+          sendResponse({ status: 'success', improvedText: llmResponse.trim() })
         }
       } else {
         sendResponse({

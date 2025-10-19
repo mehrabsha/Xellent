@@ -1,11 +1,4 @@
-@font-face {
-  font-family: 'TwitterChirp';
-  src: url('https://abs.twimg.com/fonts/v1/chirp-regular-web.woff2')
-      format('woff2'),
-    url('https://abs.twimg.com/fonts/v1/chirp-regular-web.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
+@import url('common.css');
 
 .xpressive-button-container {
   /* Styles for the container holding your custom buttons */
@@ -30,6 +23,7 @@
   color: #536471; /* X's default text color */
   background-color: transparent; /* Transparent background */
   font-weight: 500; /* Medium weight like X buttons */
+  height: fit-content;
 }
 
 .xpressive-btn:hover {
