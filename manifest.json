@@ -25,7 +25,8 @@
     {
       "matches": ["https://x.com/*"],
       "js": ["src/content/content.js"],
-      "css": ["src/styles/content.css"]
+      "css": ["src/styles/content.css"],
+      "type": "module"
     }
   ],
   "web_accessible_resources": [
