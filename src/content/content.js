@@ -107,7 +107,7 @@ Generate 5 different Twitter replies that sound like real people texting, with c
 - First understand the tweet's real meaning and tone - is it sarcastic, educational, complaining, joking, motivational etc
 - Match that exact energy and context in your reply, modified by parameter settings
 - Find the balance between too formal and too casual based on Formality Level
-- Minimal punctuation - real people don't pepper texts with commas and periods  
+- Minimal punctuation - real people don't pepper texts with commas and periods
 - Adjust exclamation marks and corporate language based on Formality Level
 - Question usage depends on Engagement Style level
 - Be specific instead of using "this," "that," "it"
@@ -115,7 +115,7 @@ Generate 5 different Twitter replies that sound like real people texting, with c
 ## Reply Styles (Adjusted by Parameters)
 Read the original tweet carefully to understand if it's:
 - **Sarcastic/Snarky**: Match sarcasm level to Sass parameter
-- **Educational**: Engagement level determines depth of response  
+- **Educational**: Engagement level determines depth of response
 - **Complaining**: Relatability factor influences how much you relate
 - **Joking**: Humor level determines how much you play along
 - **Motivational**: Formality and Sass levels affect supportiveness style
@@ -142,22 +142,13 @@ Read the original tweet carefully to understand if it's:
 Tweet: "Traffic is insane today"
 Reply: "I completely understand that frustration. Hope it clears up soon for you."
 
-**Low Formality (3), High Sass (8), High Engagement (7)**  
+**Low Formality (3), High Sass (8), High Engagement (7)**
 Tweet: "Traffic is insane today"
 Reply: "lmao traffic said nah ur not getting anywhere today huh"
 
 **Medium Everything (5,5,5)**
-Tweet: "Traffic is insane today" 
+Tweet: "Traffic is insane today"
 Reply: "Always happens at the worst times too"
-
-## Output Format
-{
-  "reply1": "Your first reply here",
-  "reply2": "Your second reply here",
-  "reply3": "Your third reply here",
-  "reply4": "Your fourth reply here",
-  "reply5": "Your fifth reply here"
-}
 
 ---
 
@@ -301,6 +292,8 @@ function displayReplySuggestion(tweetElement, suggestions, type) {
 }
 
 function displayImprovedSuggestion(textareaLabel, improvedText) {
+  const improvementsArray = Object.values(JSON.parse(improvedText))
+
   // Create popup overlay
   const popupOverlay = document.createElement('div')
   popupOverlay.className = 'xpressive-popup-overlay'
@@ -324,8 +317,10 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    max-width: 400px;
+    max-width: 500px;
     width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   `
 
@@ -347,59 +342,78 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
 
   // Title
   const title = document.createElement('h3')
-  title.textContent = 'Improved Text Suggestion'
+  title.textContent = 'Improved Text Suggestions'
   title.style.cssText = `
     margin: 0 0 15px 0;
     color: #333;
   `
 
-  // Suggestion text
-  const suggestionParagraph = document.createElement('p')
-  suggestionParagraph.textContent = improvedText.trim()
-  suggestionParagraph.style.cssText = `
-    margin: 0 0 20px 0;
-    line-height: 1.5;
-    color: #555;
+  // Create container for suggestions
+  const suggestionsContainer = document.createElement('div')
+  suggestionsContainer.style.cssText = `
+    margin-bottom: 20px;
   `
 
-  // Use button
-  const useButton = document.createElement('button')
-  useButton.className = 'copy-suggestion-btn'
-  useButton.textContent = 'Use This Text'
-  useButton.style.cssText = `
-    background: #1d9bf0;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-  `
+  improvementsArray.forEach((improvement, index) => {
+    const suggestionDiv = document.createElement('div')
+    suggestionDiv.style.cssText = `
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #e1e8ed;
+      border-radius: 4px;
+      background: #f7f9fa;
+    `
 
-  useButton.addEventListener('click', () => {
-    // Find the actual textarea/input and update its value
-    const textarea =
-      document.querySelector('[data-testid="tweetTextarea_0"]') ||
-      document.querySelector('[role="textbox"][contenteditable="true"]') ||
-      document.querySelector('div[data-testid="tweetTextarea_0"]')
+    const suggestionText = document.createElement('p')
+    suggestionText.textContent = improvement.trim()
+    suggestionText.style.cssText = `
+      margin: 0 0 10px 0;
+      line-height: 1.5;
+      color: #555;
+    `
 
-    if (textarea) {
-      if (textarea.tagName === 'TEXTAREA' || textarea.tagName === 'INPUT') {
-        textarea.value = improvedText.trim()
-        textarea.dispatchEvent(new Event('input', { bubbles: true }))
-      } else if (textarea.contentEditable === 'true') {
-        textarea.focus()
-        const selection = window.getSelection()
-        const range = document.createRange()
-        range.selectNodeContents(textarea)
-        selection.removeAllRanges()
-        selection.addRange(range)
-        document.execCommand('insertText', false, improvedText.trim())
+    const copyButton = document.createElement('button')
+    copyButton.className = 'copy-suggestion-btn'
+    copyButton.textContent = 'Copy'
+    copyButton.style.cssText = `
+      background: #1d9bf0;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    `
+
+    copyButton.addEventListener('click', () => {
+      // Find the actual textarea/input and update its value
+      const textarea =
+        document.querySelector('[data-testid="tweetTextarea_0"]') ||
+        document.querySelector('[role="textbox"][contenteditable="true"]') ||
+        document.querySelector('div[data-testid="tweetTextarea_0"]')
+
+      if (textarea) {
+        if (textarea.tagName === 'TEXTAREA' || textarea.tagName === 'INPUT') {
+          textarea.value = improvement.trim()
+          textarea.dispatchEvent(new Event('input', { bubbles: true }))
+        } else if (textarea.contentEditable === 'true') {
+          textarea.focus()
+          const selection = window.getSelection()
+          const range = document.createRange()
+          range.selectNodeContents(textarea)
+          selection.removeAllRanges()
+          selection.addRange(range)
+          document.execCommand('insertText', false, improvement.trim())
+        }
       }
-    }
 
-    document.body.removeChild(popupOverlay)
-    showCustomMessage('Improved text applied!')
+      document.body.removeChild(popupOverlay)
+      showCustomMessage('Improved text applied!')
+    })
+
+    suggestionDiv.appendChild(suggestionText)
+    suggestionDiv.appendChild(copyButton)
+    suggestionsContainer.appendChild(suggestionDiv)
   })
 
   // Cancel button
@@ -412,6 +426,7 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
+    margin-top: 10px;
   `
   cancelButton.addEventListener('click', () => {
     document.body.removeChild(popupOverlay)
@@ -420,8 +435,7 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
   // Assemble popup
   popupContent.appendChild(closeButton)
   popupContent.appendChild(title)
-  popupContent.appendChild(suggestionParagraph)
-  popupContent.appendChild(useButton)
+  popupContent.appendChild(suggestionsContainer)
   popupContent.appendChild(cancelButton)
   popupOverlay.appendChild(popupContent)
 
@@ -510,11 +524,9 @@ async function handleImproveText(textareaLabel) {
 
   showCustomMessage('Improving text...', true)
 
-  const prompt = `Improve the following text to make it more engaging, clear, and professional while keeping its original meaning and intent. Make it concise but impactful:
+  const prompt = `Improve the following text to make it more engaging, clear, and professional while keeping its original meaning and intent. Make it concise but impactful. Provide 5 different improved versions.
 
-Original text: "${originalText}"
-
-Improved version:`
+Original text: "${originalText}"`
 
   chrome.runtime.sendMessage(
     { action: 'improveText', prompt: prompt },
