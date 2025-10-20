@@ -1,8 +1,4 @@
-import {
-  REPLY_SUGGESTION_PROMPT,
-  IMPROVE_TEXT_PROMPT,
-  POST_IDEAS_PROMPT,
-} from './prompts.js'
+console.log('REPLY_SUGGESTION_PROMPT', REPLY_SUGGESTION_PROMPT)
 
 function injectUI() {
   const tweets = document.querySelectorAll('article[data-testid="tweet"]')
@@ -78,7 +74,7 @@ async function handleReplySuggestion(tweetElement) {
   }
 
   showCustomMessage('Generating reply suggestion...', true)
-  const prompt = REPLY_SUGGESTION_PROMPT
+  const prompt = REPLY_SUGGESTION_PROMPT(tweetText, toneParams)
 
   chrome.runtime.sendMessage(
     { action: 'getReplySuggestions', prompt: prompt },
@@ -360,7 +356,7 @@ function showCustomMessage(message, isLoading = false, duration = 3000) {
 async function getPostIdeas() {
   showCustomMessage('Generating post ideas...', true)
 
-  const prompt = POST_IDEAS_PROMPT
+  const prompt = await POST_IDEAS_PROMPT()
 
   chrome.runtime.sendMessage(
     { action: 'getPostIdeas', prompt: prompt },
@@ -399,7 +395,7 @@ async function handleImproveText(textareaLabel) {
 
   showCustomMessage('Improving text...', true)
 
-  const prompt = IMPROVE_TEXT_PROMPT
+  const prompt = IMPROVE_TEXT_PROMPT(originalText)
 
   chrome.runtime.sendMessage(
     { action: 'improveText', prompt: prompt },

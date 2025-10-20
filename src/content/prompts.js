@@ -1,4 +1,5 @@
-export const REPLY_SUGGESTION_PROMPT = `
+function REPLY_SUGGESTION_PROMPT(tweetText, toneParams) {
+  return `
 Generate 5 different Twitter replies that sound like real people texting, with customizable style parameters for precise control over tone and approach.
 
 ## Parameters (Scale 1-10)
@@ -83,13 +84,19 @@ Reply: "Always happens at the worst times too"
 3. Generator will create 5 replies matching your parameter settings
 4. Default parameters if not specified: Formality: 5, Sass: 4, Engagement: 5, Humor: 5, Relatability: 6
 
-**Original Tweet**: "\${tweetText}"
-**Parameters**: Formality: \${toneParams.formality}, Sass: \${toneParams.sass}, Engagement: \${toneParams.engagement}, Humor: \${toneParams.humor}, Relatability: \${toneParams.relatability}
+**Original Tweet**: "${tweetText}"
+**Parameters**: Formality: ${toneParams.formality}, Sass: ${toneParams.sass}, Engagement: ${toneParams.engagement}, Humor: ${toneParams.humor}, Relatability: ${toneParams.relatability}
 
 `
+}
 
-export const IMPROVE_TEXT_PROMPT = `Improve the following text to make it more engaging, clear, and professional while keeping its original meaning and intent. Make it concise but impactful. Provide 5 different improved versions.
+function IMPROVE_TEXT_PROMPT(originalText) {
+  return `Improve the following text to make it more engaging, clear, and professional while keeping its original meaning and intent. Make it concise but impactful. Provide 5 different improved versions.
 
-Original text: "\${originalText}"`
+Original text: "${originalText}"`
+}
 
-export const POST_IDEAS_PROMPT = `Suggest 3 unique and engaging X post ideas about \${await getUserInterests()}.`
+async function POST_IDEAS_PROMPT() {
+  const interests = await getUserInterests()
+  return `Suggest 3 unique and engaging X post ideas about ${interests}.`
+}
