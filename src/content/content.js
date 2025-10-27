@@ -67,6 +67,21 @@ async function handleReplySuggestion(tweetElement) {
     return
   }
 
+  // Check if this is a reply (not the main tweet)
+  let mainTweetText = null
+  let mainTweetName = null
+  const mainTweet = document.querySelector('article[data-testid="tweet"]')
+  if (tweetElement !== mainTweet) {
+    mainTweetText =
+      mainTweet.querySelector('div[data-testid="tweetText"]')?.innerText || ''
+    mainTweetName =
+      mainTweet.querySelector('div[data-testid="User-Name"]')?.innerText || ''
+  }
+
+  // Get the reply tweet's name and username
+  const replyName =
+    tweetElement.querySelector('div[data-testid="User-Name"]')?.innerText || ''
+
   // Disable button and show loading state
   const btn = tweetElement.querySelector('.xpressive-btn-reply')
   if (btn) {
@@ -76,7 +91,14 @@ async function handleReplySuggestion(tweetElement) {
   }
 
   showCustomMessage('Generating reply suggestion...', true)
-  const prompt = REPLY_SUGGESTION_PROMPT(tweetText, toneParams)
+  const prompt = REPLY_SUGGESTION_PROMPT(
+    '0xMehrab',
+    mainTweetText,
+    tweetText,
+    mainTweetName,
+    replyName,
+    toneParams
+  )
 
   chrome.runtime.sendMessage(
     { action: 'getReplySuggestions', prompt: prompt },
