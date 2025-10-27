@@ -4,7 +4,8 @@ function REPLY_SUGGESTION_PROMPT(
   replyText,
   mainTweetName,
   replyName,
-  toneParams
+  toneParams,
+  replyExamples
 ) {
   return `# Twitter Reply Generator: Authentic Human Responses
 
@@ -177,7 +178,22 @@ ${
   }, Relatability: ${toneParams.relatability}
 
 
-**Output:** 5 authentic replies that sound like @${myUsername} as a real human who actually read and cared about the tweet`
+**Output:** 5 authentic replies that sound like @${myUsername} as a real human who actually read and cared about the tweet
+
+${
+  replyExamples
+    ? `## Your Reply Examples
+Use these as inspiration for style and tone. These are examples of replies:
+
+${replyExamples
+  .split('\n')
+  .filter((line) => line.trim())
+  .map((example) => `- "${example.trim()}"`)
+  .join('\n')}
+
+Incorporate elements from these examples into the generated replies to maintain consistency with your previous reply style.`
+    : ''
+}`
 }
 
 function IMPROVE_TEXT_PROMPT(originalText) {

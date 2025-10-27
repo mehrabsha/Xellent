@@ -13,6 +13,7 @@ function loadSettings() {
       'replyLength',
       'interestsSetting',
       'postIdeaFormat',
+      'replyExamples',
     ],
     (items) => {
       document.getElementById('apikey').value = items.apikey
@@ -27,6 +28,7 @@ function loadSettings() {
         items.interestsSetting || ''
       document.getElementById('postIdeaFormat').value =
         items.postIdeaFormat || 'tweet'
+      document.getElementById('replyExamples').value = items.replyExamples || ''
 
       document.getElementById('sasstone').value = items.toneParams
         ? items.toneParams.sass
@@ -54,6 +56,7 @@ function saveSettings() {
   const replyLength = document.getElementById('replyLength').value
   const interestsSetting = document.getElementById('interestsSetting').value
   const postIdeaFormat = document.getElementById('postIdeaFormat').value
+  const replyExamples = document.getElementById('replyExamples').value
 
   const formalityeone = document.getElementById('formalityeone').value
   const sasstone = document.getElementById('sasstone').value
@@ -78,6 +81,7 @@ function saveSettings() {
       replyLength: parseInt(replyLength),
       interestsSetting: interestsSetting,
       postIdeaFormat: postIdeaFormat,
+      replyExamples: replyExamples,
     },
     () => {
       const statusMessage = document.getElementById('statusMessage')

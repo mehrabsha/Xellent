@@ -92,13 +92,15 @@ async function handleReplySuggestion(tweetElement) {
 
   showCustomMessage('Generating reply suggestion...', true)
   const username = await getTwitterUsername()
+  const replyExamples = await getReplyExamples()
   const prompt = REPLY_SUGGESTION_PROMPT(
     username,
     mainTweetText,
     tweetText,
     mainTweetName,
     replyName,
-    toneParams
+    toneParams,
+    replyExamples
   )
 
   chrome.runtime.sendMessage(
@@ -409,6 +411,14 @@ async function getTwitterUsername() {
   return new Promise((resolve) => {
     chrome.storage.sync.get('twitterUsername', (data) => {
       resolve(data.twitterUsername || '0xMehrab')
+    })
+  })
+}
+
+async function getReplyExamples() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get('replyExamples', (data) => {
+      resolve(data.replyExamples || '')
     })
   })
 }
