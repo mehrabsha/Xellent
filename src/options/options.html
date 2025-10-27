@@ -8,72 +8,72 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../styles/options.css">
 </head>
-<body class="bg-gray-100 p-8 font-sans antialiased text-gray-800">
-    <div class="container mx-auto bg-white p-6 rounded-lg shadow-xl max-w-2xl">
-        <h1 class="text-3xl font-bold mb-6 text-center text-blue-700">Settings</h1>
+<body class="bg-gray-900 p-8 font-sans antialiased text-gray-100">
+    <div class="container mx-auto bg-gray-800 p-6 rounded-lg shadow-xl max-w-2xl">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-300">Settings</h1>
 
         <!-- General Settings -->
-        <div class="mb-6 pb-4 border-b border-gray-200">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">General</h2>
+        <div class="mb-6 pb-4 border-b border-gray-700">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-300">General</h2>
              <div class="mb-4">
-                <label for="apikey" class="block text-sm font-medium text-gray-700 mb-2">OpenRouter API Key : </label>
-                <input type="password" id="apikey" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Enter your OpenRouter API key" required>
+                <label for="apikey" class="block text-sm font-medium text-gray-300 mb-2">OpenRouter API Key : </label>
+                <input type="password" id="apikey" class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 focus:ring-blue-400 focus:border-blue-400 sm:text-sm bg-gray-700 text-gray-100" placeholder="Enter your OpenRouter API key" required>
             </div>
             <div class="mb-4">
-                <label for="modelName" class="block text-sm font-medium text-gray-700 mb-2">Model Name:</label>
-                <input type="text" id="modelName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., openai/gpt-4o-mini">
+                <label for="modelName" class="block text-sm font-medium text-gray-300 mb-2">Model Name:</label>
+                <input type="text" id="modelName" class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 focus:ring-blue-400 focus:border-blue-400 sm:text-sm bg-gray-700 text-gray-100" placeholder="e.g., openai/gpt-4o-mini">
             </div>
             <div class="mb-4">
-                <label for="twitterUsername" class="block text-sm font-medium text-gray-700 mb-2">Twitter Username:</label>
-                <input type="text" id="twitterUsername" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 0xMehrab">
+                <label for="twitterUsername" class="block text-sm font-medium text-gray-300 mb-2">Twitter Username:</label>
+                <input type="text" id="twitterUsername" class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 focus:ring-blue-400 focus:border-blue-400 sm:text-sm bg-gray-700 text-gray-100" placeholder="e.g., 0xMehrab">
             </div>
         </div>
 
 
         <!-- Reply Suggestions Settings -->
-        <div class="mb-6 pb-4 border-b border-gray-200">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Reply Suggestions</h2>
+        <div class="mb-6 pb-4 border-b border-gray-700">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-300">Reply Suggestions</h2>
             <div class="mb-4">
-                <label for="formalityeone" class="block text-sm font-medium text-gray-700 mb-2">Formality:</label>
+                <label for="formalityeone" class="block text-sm font-medium text-gray-300 mb-2">Formality:</label>
                 <input type="range" min="1" max="10" value="3" class="slider w-80" id="formalityeone"/>
             </div>
             <div class="mb-4">
-                <label for="sasstone" class="block text-sm font-medium text-gray-700 mb-2">Sass/Attitude:</label>
+                <label for="sasstone" class="block text-sm font-medium text-gray-300 mb-2">Sass/Attitude:</label>
                 <input type="range" min="1" max="10" value="3" class="slider w-80" id="sasstone"/>
             </div>
             <div class="mb-4">
-                <label for="engagementtone" class="block text-sm font-medium text-gray-700 mb-2">Engagement:</label>
+                <label for="engagementtone" class="block text-sm font-medium text-gray-300 mb-2">Engagement:</label>
                 <input type="range" min="1" max="10" value="3" class="slider w-80" id="engagementtone"/>
             </div>
             <div class="mb-4">
-                <label for="humortone" class="block text-sm font-medium text-gray-700 mb-2">Humor:</label>
+                <label for="humortone" class="block text-sm font-medium text-gray-300 mb-2">Humor:</label>
                 <input type="range" min="1" max="10" value="3" class="slider w-80" id="humortone"/>
             </div>
             <div class="mb-4">
-                <label for="relatabilitytone" class="block text-sm font-medium text-gray-700 mb-2">Relatability:</label>
+                <label for="relatabilitytone" class="block text-sm font-medium text-gray-300 mb-2">Relatability:</label>
                 <input type="range" min="1" max="10" value="3" class="slider w-80" id="relatabilitytone"/>
             </div>
             <div class="mb-4">
-                <label for="replyLength" class="block text-sm font-medium text-gray-700 mb-2">Max reply length (words):</label>
-                <input type="number" id="replyLength" class=" mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" min="10" max="280" value="50">
+                <label for="replyLength" class="block text-sm font-medium text-gray-300 mb-2">Max reply length (words):</label>
+                <input type="number" id="replyLength" class=" mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 focus:ring-blue-400 focus:border-blue-400 sm:text-sm bg-gray-700 text-gray-100" min="10" max="280" value="50">
             </div>
             <div class="mb-4">
-                <label for="replyExamples" class="block text-sm font-medium text-gray-700 mb-2">Reply Examples (one per line):</label>
-                <textarea id="replyExamples" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" rows="5" placeholder="Enter example replies, one per line"></textarea>
+                <label for="replyExamples" class="block text-sm font-medium text-gray-300 mb-2">Reply Examples (one per line):</label>
+                <textarea id="replyExamples" class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 focus:ring-blue-400 focus:border-blue-400 sm:text-sm bg-gray-700 text-gray-100" rows="5" placeholder="Enter example replies, one per line"></textarea>
             </div>
         </div>
 
 
         <!-- Post Idea Suggestions Settings -->
-        <div class="mb-6 pb-4 border-b border-gray-200">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Post Idea Suggestions</h2>
+        <div class="mb-6 pb-4 border-b border-gray-700">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-300">Post Idea Suggestions</h2>
             <div class="mb-4">
-                <label for="interestsSetting" class="block text-sm font-medium text-gray-700 mb-2">Your interests (comma-separated for LLM):</label>
-                <textarea id="interestsSetting" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" rows="3" placeholder="e.g., technology, artificial intelligence, productivity"></textarea>
+                <label for="interestsSetting" class="block text-sm font-medium text-gray-300 mb-2">Your interests (comma-separated for LLM):</label>
+                <textarea id="interestsSetting" class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 focus:ring-blue-400 focus:border-blue-400 sm:text-sm bg-gray-700 text-gray-100" rows="3" placeholder="e.g., technology, artificial intelligence, productivity"></textarea>
             </div>
             <div class="mb-4">
-                <label for="postIdeaFormat" class="block text-sm font-medium text-gray-700 mb-2">Preferred post format:</label>
-                <select id="postIdeaFormat" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <label for="postIdeaFormat" class="block text-sm font-medium text-gray-300 mb-2">Preferred post format:</label>
+                <select id="postIdeaFormat" class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 focus:ring-blue-400 focus:border-blue-400 sm:text-sm bg-gray-700 text-gray-100">
                     <option value="tweet">Short Tweet</option>
                     <option value="thread">Thread</option>
                     <option value="question">Question</option>
@@ -83,11 +83,11 @@
 
      
 
-        <button id="saveSettingsBtn" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out text-lg font-semibold">
+        <button id="saveSettingsBtn" class="w-full bg-blue-700 text-white py-3 px-6 rounded-lg shadow-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition duration-150 ease-in-out text-lg font-semibold">
             Save Settings
         </button>
 
-        <div id="statusMessage" class="mt-4 text-center text-sm font-medium text-green-700 hidden">
+        <div id="statusMessage" class="mt-4 text-center text-sm font-medium text-green-300 hidden">
             Settings saved successfully!
         </div>
     </div>
