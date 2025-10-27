@@ -1,36 +1,38 @@
 console.log('REPLY_SUGGESTION_PROMPT', REPLY_SUGGESTION_PROMPT)
 
 function injectUI() {
-  const tweets = document.querySelectorAll('article[data-testid="tweet"]')
+  if (window.location.pathname.includes('/status/')) {
+    const tweets = document.querySelectorAll('article[data-testid="tweet"]')
 
-  tweets.forEach((tweet) => {
-    if (!tweet.dataset.xEnhancerProcessed) {
-      tweet.dataset.xEnhancerProcessed = 'true'
+    tweets.forEach((tweet) => {
+      if (!tweet.dataset.xEnhancerProcessed) {
+        tweet.dataset.xEnhancerProcessed = 'true'
 
-      const buttonContainer = document.createElement('div')
-      buttonContainer.className =
-        'xpressive-button-container flex items-center space-x-2 mt-2'
+        const buttonContainer = document.createElement('div')
+        buttonContainer.className =
+          'xpressive-button-container flex items-center space-x-2 mt-2'
 
-      const replySuggestBtn = document.createElement('button')
-      replySuggestBtn.textContent = 'Suggest Reply'
-      replySuggestBtn.className = 'xpressive-btn xpressive-btn-reply'
-      replySuggestBtn.addEventListener('click', () =>
-        handleReplySuggestion(tweet)
-      )
-
-      buttonContainer.appendChild(replySuggestBtn)
-
-      const tweetActionsBar = tweet.querySelector('div[role="group"]')
-      if (tweetActionsBar) {
-        tweetActionsBar.parentNode.insertBefore(
-          buttonContainer,
-          tweetActionsBar.nextSibling
+        const replySuggestBtn = document.createElement('button')
+        replySuggestBtn.textContent = 'Suggest Reply'
+        replySuggestBtn.className = 'xpressive-btn xpressive-btn-reply'
+        replySuggestBtn.addEventListener('click', () =>
+          handleReplySuggestion(tweet)
         )
-      } else {
-        tweet.appendChild(buttonContainer)
+
+        buttonContainer.appendChild(replySuggestBtn)
+
+        const tweetActionsBar = tweet.querySelector('div[role="group"]')
+        if (tweetActionsBar) {
+          tweetActionsBar.parentNode.insertBefore(
+            buttonContainer,
+            tweetActionsBar.nextSibling
+          )
+        } else {
+          tweet.appendChild(buttonContainer)
+        }
       }
-    }
-  })
+    })
+  }
 
   // Add improve button to tweet textarea label
   const textareaLabel = document.querySelector(
