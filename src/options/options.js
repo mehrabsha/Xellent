@@ -8,6 +8,7 @@ function loadSettings() {
     [
       'apikey',
       'modelName',
+      'twitterUsername',
       'toneParams',
       'replyLength',
       'interestsSetting',
@@ -17,6 +18,8 @@ function loadSettings() {
       document.getElementById('apikey').value = items.apikey
       document.getElementById('modelName').value =
         items.modelName || 'openai/gpt-4o-mini'
+      document.getElementById('twitterUsername').value =
+        items.twitterUsername || '0xMehrab'
 
       document.getElementById('replyLength').value =
         items.replyLength !== undefined ? items.replyLength : 50
@@ -47,6 +50,7 @@ function loadSettings() {
 function saveSettings() {
   const apikey = document.getElementById('apikey').value
   const modelName = document.getElementById('modelName').value
+  const twitterUsername = document.getElementById('twitterUsername').value
   const replyLength = document.getElementById('replyLength').value
   const interestsSetting = document.getElementById('interestsSetting').value
   const postIdeaFormat = document.getElementById('postIdeaFormat').value
@@ -69,6 +73,7 @@ function saveSettings() {
     {
       apikey: apikey,
       modelName: modelName,
+      twitterUsername: twitterUsername,
       toneParams: toneParams,
       replyLength: parseInt(replyLength),
       interestsSetting: interestsSetting,

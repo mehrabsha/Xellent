@@ -91,8 +91,9 @@ async function handleReplySuggestion(tweetElement) {
   }
 
   showCustomMessage('Generating reply suggestion...', true)
+  const username = await getTwitterUsername()
   const prompt = REPLY_SUGGESTION_PROMPT(
-    '0xMehrab',
+    username,
     mainTweetText,
     tweetText,
     mainTweetName,
@@ -400,6 +401,14 @@ async function getUserInterests() {
   return new Promise((resolve) => {
     chrome.storage.sync.get('interestsSetting', (data) => {
       resolve(data.interestsSetting || 'technology and social media')
+    })
+  })
+}
+
+async function getTwitterUsername() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get('twitterUsername', (data) => {
+      resolve(data.twitterUsername || '0xMehrab')
     })
   })
 }
