@@ -42,7 +42,8 @@
 
 /* Specific button styles */
 .xpressive-btn-reply {
-  /* Inherits base styles, no additional styles needed for reply button */
+  width: 100%;
+  text-align: center;
 }
 
 /* Styles for the reply/post suggestion display */
@@ -59,7 +60,8 @@
 
 .xpressive-reply-suggestion p,
 .xpressive-post-suggestion p {
-  margin-bottom: 8px; /* Space between paragraphs in suggestion */
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .xpressive-reply-suggestion p:last-child,

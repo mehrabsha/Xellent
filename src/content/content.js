@@ -70,7 +70,7 @@ async function handleReplySuggestion(tweetElement) {
   if (btn) {
     btn.disabled = true
     btn.innerHTML =
-      '<div class="loading-spinner" style="width: 12px; height: 12px; border: 1px solid #536471; border-top: 1px solid #1d9bf0; position: inline-block;"></div> Generating...'
+      '<div style="display:flex; gap:8px; width:100%; align-items:center; justify-content:center;" > <div class="loading-spinner" style="width: 12px; height: 12px; border: 1px solid #536471; border-top: 1px solid #1d9bf0; position: inline-block;"></div> <span>Generating...</span></div>'
   }
 
   showCustomMessage('Generating reply suggestion...', true)
@@ -123,7 +123,7 @@ function createSuggestionCard(suggestion, buttonText, handler) {
     margin-bottom: 15px;
     padding: 10px;
     border: 1px solid #2f3336;
-    border-radius: 8px;
+    border-radius: 16px;
     background: transparent;
     font-family: 'TwitterChirp';
     display: flex;
@@ -245,7 +245,7 @@ function createPopupContent() {
   popupContent.style.cssText = `
     background: white;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 16px;
     max-width: 500px;
     width: 90%;
     max-height: 80vh;
