@@ -1,5 +1,5 @@
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Xpressive installed.')
+  console.log('Xpert installed.')
 })
 
 async function getApiKey() {
@@ -54,7 +54,7 @@ async function callOpenrouter(prompt, model, tools = null) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'X-Title': 'Xpressive',
+        'X-Title': 'Xpert',
       },
       body: JSON.stringify(requestBody),
     })
@@ -168,6 +168,27 @@ const tools = [
 // Listen for messages from popup or content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (
+    request.action === 'startCollector' ||
+    request.action === 'stopCollector'
+  ) {
+    // Relay message to active tab's content script
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, request, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error(
+              'Error sending message to content script:',
+              chrome.runtime.lastError
+            )
+          }
+        })
+      }
+    })
+    sendResponse({ status: 'ok' })
+    return true
+  }
+
+  if (
     request.action === 'getReplySuggestions' ||
     request.action === 'getPostIdeas' ||
     request.action === 'improveText'
@@ -181,7 +202,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       let useTools = false
 
       if (request.action === 'getReplySuggestions') {
-        enhancedPrompt += ` Keep each reply under ${replyLength} words. Use the provide_reply_suggestions tool to return the suggestions.`
+        enhancedPrompt += ` Keep each reply under ${replyLength} words (from one to ${replyLength}). Use the provide_reply_suggestions tool to return the suggestions.`
         useTools = true
       } else if (request.action === 'improveText') {
         enhancedPrompt += ` Use the provide_text_improvements tool to return 5 different improved versions of the text.`

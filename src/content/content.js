@@ -1,3 +1,5 @@
+// Tweet collector functionality is now in tweetCollector.js
+
 console.log('REPLY_SUGGESTION_PROMPT', REPLY_SUGGESTION_PROMPT)
 
 function injectUI() {
@@ -10,11 +12,11 @@ function injectUI() {
 
         const buttonContainer = document.createElement('div')
         buttonContainer.className =
-          'xpressive-button-container flex items-center space-x-2 mt-2'
+          'xpert-button-container flex items-center space-x-2 mt-2'
 
         const replySuggestBtn = document.createElement('button')
         replySuggestBtn.textContent = 'Suggest Reply'
-        replySuggestBtn.className = 'xpressive-btn xpressive-btn-reply'
+        replySuggestBtn.className = 'xpert-btn xpert-btn-reply'
         replySuggestBtn.addEventListener('click', () =>
           handleReplySuggestion(tweet)
         )
@@ -43,7 +45,7 @@ function injectUI() {
 
     const improveBtn = document.createElement('button')
     improveBtn.textContent = 'improve'
-    improveBtn.className = 'xpressive-btn xpressive-btn-improve'
+    improveBtn.className = 'xpert-btn xpert-btn-improve'
     improveBtn.addEventListener('click', () => handleImproveText(textareaLabel))
 
     textareaLabel.appendChild(improveBtn)
@@ -83,7 +85,7 @@ async function handleReplySuggestion(tweetElement) {
     tweetElement.querySelector('div[data-testid="User-Name"]')?.innerText || ''
 
   // Disable button and show loading state
-  const btn = tweetElement.querySelector('.xpressive-btn-reply')
+  const btn = tweetElement.querySelector('.xpert-btn-reply')
   if (btn) {
     btn.disabled = true
     btn.innerHTML =
@@ -107,7 +109,7 @@ async function handleReplySuggestion(tweetElement) {
     { action: 'getReplySuggestions', prompt: prompt },
     (response) => {
       // Re-enable button and restore original text
-      const btn = tweetElement.querySelector('.xpressive-btn-reply')
+      const btn = tweetElement.querySelector('.xpert-btn-reply')
       if (btn) {
         btn.disabled = false
         btn.textContent = 'Suggest Reply'
@@ -186,12 +188,10 @@ function createSuggestionCard(suggestion, buttonText, handler) {
 }
 
 function displaySuggestion(tweetElement, suggestion, type) {
-  let suggestionArea = tweetElement.querySelector(
-    `.xpressive-${type}-suggestion`
-  )
+  let suggestionArea = tweetElement.querySelector(`.xpert-${type}-suggestion`)
   if (!suggestionArea) {
     suggestionArea = document.createElement('div')
-    suggestionArea.className = `xpressive-${type}-suggestion`
+    suggestionArea.className = `xpert-${type}-suggestion`
     tweetElement.appendChild(suggestionArea)
   }
 
@@ -217,13 +217,11 @@ function displaySuggestion(tweetElement, suggestion, type) {
 
 function displayReplySuggestion(tweetElement, suggestions, type) {
   const suggestionsArray = Object.values(JSON.parse(suggestions))
-  let suggestionArea = tweetElement.querySelector(
-    `.xpressive-${type}-suggestion`
-  )
+  let suggestionArea = tweetElement.querySelector(`.xpert-${type}-suggestion`)
 
   if (!suggestionArea) {
     suggestionArea = document.createElement('div')
-    suggestionArea.className = `xpressive-${type}-suggestion`
+    suggestionArea.className = `xpert-${type}-suggestion`
     tweetElement.appendChild(suggestionArea)
   }
 
@@ -250,7 +248,7 @@ function displayReplySuggestion(tweetElement, suggestions, type) {
 
 function createPopupOverlay() {
   const popupOverlay = document.createElement('div')
-  popupOverlay.className = 'xpressive-popup-overlay'
+  popupOverlay.className = 'xpert-popup-overlay'
   popupOverlay.style.cssText = `
     position: fixed;
     top: 0;
@@ -268,7 +266,7 @@ function createPopupOverlay() {
 
 function createPopupContent() {
   const popupContent = document.createElement('div')
-  popupContent.className = 'xpressive-popup-content'
+  popupContent.className = 'xpert-popup-content'
   popupContent.style.cssText = `
     background: white;
     padding: 20px;
@@ -325,7 +323,7 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
 
   // Remove any existing suggestions
   const existingSuggestions = textareaLabel.parentNode.querySelectorAll(
-    '.xpressive-improve-suggestions'
+    '.xpert-improve-suggestions'
   )
   existingSuggestions.forEach((suggestion) => suggestion.remove())
 
@@ -335,12 +333,12 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
       applyTextToTextarea(improvement.trim())
       // Remove all suggestions after use
       const allSuggestions = textareaLabel.parentNode.querySelectorAll(
-        '.xpressive-improve-suggestions'
+        '.xpert-improve-suggestions'
       )
       allSuggestions.forEach((suggestion) => suggestion.remove())
       showCustomMessage('Improved text applied!')
     })
-    card.className += ' xpressive-improve-suggestions'
+    card.className += ' xpert-improve-suggestions'
     textareaLabel.parentNode.parentNode.insertBefore(
       card,
       textareaLabel.nextSibling
@@ -349,10 +347,10 @@ function displayImprovedSuggestion(textareaLabel, improvedText) {
 }
 
 function showCustomMessage(message, isLoading = false, duration = 3000) {
-  let messageBox = document.getElementById('xpressive-message-box')
+  let messageBox = document.getElementById('xpert-message-box')
   if (!messageBox) {
     messageBox = document.createElement('div')
-    messageBox.id = 'xpressive-message-box'
+    messageBox.id = 'xpert-message-box'
     messageBox.className = ''
     document.body.appendChild(messageBox)
   }

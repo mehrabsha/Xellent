@@ -1,6 +1,6 @@
 @import url('common.css');
 
-.xpressive-button-container {
+.xpert-button-container {
   /* Styles for the container holding your custom buttons */
   margin-top: 8px;
   display: flex;
@@ -9,7 +9,7 @@
   /* You might need to adjust positioning based on X's DOM */
 }
 
-.xpressive-btn {
+.xpert-btn {
   /* Base styles for your custom buttons */
   font-family: 'TwitterChirp', sans-serif;
   cursor: pointer;
@@ -26,29 +26,29 @@
   height: fit-content;
 }
 
-.xpressive-btn:hover {
+.xpert-btn:hover {
   background-color: rgba(29, 155, 240, 0.1); /* X's hover background */
   color: #1d9bf0; /* X's blue color on hover */
 }
 
-.xpressive-btn:active {
+.xpert-btn:active {
   background-color: rgba(29, 155, 240, 0.2); /* Slightly darker on click */
 }
 
-.xpressive-btn:disabled {
+.xpert-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 /* Specific button styles */
-.xpressive-btn-reply {
+.xpert-btn-reply {
   width: 100%;
   text-align: center;
 }
 
 /* Styles for the reply/post suggestion display */
-.xpressive-reply-suggestion,
-.xpressive-post-suggestion {
+.xpert-reply-suggestion,
+.xpert-post-suggestion {
   font-family: 'TwitterChirp', sans-serif;
   color: inherit; /* text-blue-800 */
   padding: 12px;
@@ -58,18 +58,18 @@
   word-wrap: break-word; /* Ensure long text wraps */
 }
 
-.xpressive-reply-suggestion p,
-.xpressive-post-suggestion p {
+.xpert-reply-suggestion p,
+.xpert-post-suggestion p {
   margin-bottom: 8px;
   font-size: 14px;
 }
 
-.xpressive-reply-suggestion p:last-child,
-.xpressive-post-suggestion p:last-child {
+.xpert-reply-suggestion p:last-child,
+.xpert-post-suggestion p:last-child {
   margin-bottom: 0;
 }
 
-.xpressive-reply-suggestion div {
+.xpert-reply-suggestion div {
   margin-top: 10px;
   border: 1px solid rgb(47, 51, 54);
   padding: 10px;
@@ -94,7 +94,7 @@
 }
 
 /* Custom message box for notifications (instead of alert) */
-#xpressive-message-box {
+#xpert-message-box {
   position: fixed;
   bottom: 16px;
   left: 16px;
@@ -115,7 +115,7 @@
   font-family: 'TwitterChirp', sans-serif;
 }
 
-#xpressive-message-box.hidden {
+#xpert-message-box.hidden {
   opacity: 0;
   transition: 0.4s;
 }
