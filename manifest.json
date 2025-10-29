@@ -25,12 +25,13 @@
     {
       "matches": ["https://x.com/*"],
       "js": ["src/content/prompts.js", "src/content/tweetCollector.js", "src/content/content.js"],
-      "css": ["src/styles/content.css"]
+      "css": ["src/styles/content.css"],
+      "all_frames": false
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["settings.html"],
+      "resources": ["settings.html", "src/content/prompts.js"],
       "matches": ["https://x.com/*"]
     }
   ]

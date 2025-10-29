@@ -194,6 +194,40 @@ const tools = [
   },
 ]
 
+// Define the SELECT_BEST_TWEET_PROMPT function locally
+function SELECT_BEST_TWEET_PROMPT(tweetPack) {
+  return `# Tweet Selection and Reply Generation
+
+You are given a pack of 5 tweets. Your task is to:
+
+1. **Select the best tweet** from the pack that would be most suitable for receiving a reply. Consider:
+   - Engagement potential (controversial, relatable, interesting topics)
+   - Reply-worthiness (not too short, not too long, has substance)
+   - Timeliness (recent, relevant topics)
+   - Quality (well-written, clear, meaningful)
+
+2. **Generate a suggested reply** for the selected tweet that:
+   - Sounds natural and human-like
+   - Adds value to the conversation
+   - Is appropriate in length (1-3 sentences)
+   - Shows genuine engagement with the tweet's content
+
+## Tweet Pack:
+${tweetPack
+  .map(
+    (tweet, index) =>
+      `**Tweet ${index + 1}** by @${tweet.handle}: "${tweet.text}"`
+  )
+  .join('\n\n')}
+
+## Selection Criteria:
+- Choose the tweet that sparks the most interesting conversation
+- Prefer tweets that are substantive but not overwhelming
+- Look for tweets that invite thoughtful responses
+
+Use the select_best_tweet_and_reply tool to provide your selection and reply suggestion.`
+}
+
 // Listen for messages from popup or content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (
@@ -208,6 +242,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             console.error(
               'Error sending message to content script:',
               chrome.runtime.lastError
+            )
+          } else {
+            console.log(
+              'Relayed message to content script, response:',
+              response
             )
           }
         })
@@ -233,10 +272,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       if (request.action === 'processTweetPack') {
         console.log('Received tweet pack:', request.tweets)
-        // Import the prompt function
-        const { SELECT_BEST_TWEET_PROMPT } = await import(
-          chrome.runtime.getURL('src/content/prompts.js')
-        )
+        console.log('Sender tab ID:', sender.tab?.id)
         prompt = SELECT_BEST_TWEET_PROMPT(request.tweets)
         enhancedPrompt =
           prompt +
@@ -279,13 +315,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 { active: true, currentWindow: true },
                 (tabs) => {
                   if (tabs[0]) {
-                    console.log('Sending tweetSelected message to content script')
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                      action: 'tweetSelected',
-                      selectedTweet: request.tweets[result.selectedTweetIndex],
-                      replySuggestion: result.replySuggestion,
-                      reasoning: result.reasoning,
-                    })
+                    console.log(
+                      'Sending tweetSelected message to content script'
+                    )
+                    chrome.tabs.sendMessage(
+                      tabs[0].id,
+                      {
+                        action: 'tweetSelected',
+                        selectedTweet:
+                          request.tweets[result.selectedTweetIndex],
+                        replySuggestion: result.replySuggestion,
+                        reasoning: result.reasoning,
+                      },
+                      (response) => {
+                        if (chrome.runtime.lastError) {
+                          console.error(
+                            'Error sending tweetSelected to content script:',
+                            chrome.runtime.lastError
+                          )
+                        } else {
+                          console.log(
+                            'tweetSelected sent successfully, response:',
+                            response
+                          )
+                        }
+                      }
+                    )
                   }
                 }
               )

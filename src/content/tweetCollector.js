@@ -61,10 +61,22 @@ function startTweetCollection() {
           if (tweetBuffer.length >= 5) {
             console.log('Sending tweet pack to background:', tweetBuffer)
             // Send buffer to background for processing
-            chrome.runtime.sendMessage({
-              action: 'processTweetPack',
-              tweets: tweetBuffer,
-            })
+            chrome.runtime.sendMessage(
+              {
+                action: 'processTweetPack',
+                tweets: tweetBuffer,
+              },
+              (response) => {
+                if (chrome.runtime.lastError) {
+                  console.error(
+                    'Error sending message to background:',
+                    chrome.runtime.lastError
+                  )
+                } else {
+                  console.log('Message sent successfully, response:', response)
+                }
+              }
+            )
             tweetBuffer = [] // Reset buffer
           }
         }

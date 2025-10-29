@@ -207,7 +207,7 @@ async function POST_IDEAS_PROMPT() {
   return `Suggest 3 unique and engaging X post ideas about ${interests}.`
 }
 
-function SELECT_BEST_TWEET_PROMPT(tweetPack) {
+export function SELECT_BEST_TWEET_PROMPT(tweetPack) {
   return `# Tweet Selection and Reply Generation
 
 You are given a pack of 5 tweets. Your task is to:
