@@ -1,5 +1,6 @@
 let isCollecting = false
 let collectionInterval = null
+let tweetBuffer = []
 
 function startTweetCollection() {
   if (isCollecting) return
@@ -25,13 +26,48 @@ function startTweetCollection() {
       const userHandle =
         tweet.querySelector('span[role="link"]')?.innerText || ''
 
-      if (tweetText && !tweet.dataset.collected) {
+      // Check for media (images or videos) and if is img the alt should not be empty
+      const hasMedia =
+        tweet.querySelector('img[alt]:not([alt=""]), video') !== null
+
+      console.log('Tweet found:', {
+        text: tweetText.substring(0, 50),
+        hasMedia,
+        collected: tweet.dataset.collected,
+      })
+
+      if (tweetText && !tweet.dataset.collected && !hasMedia) {
         tweet.dataset.collected = 'true'
-        console.log('Collected Tweet:', {
+
+        // Extract tweet ID from URL
+        const tweetLink = tweet.querySelector('a[href*="/status/"]')
+        const tweetId = tweetLink ? tweetLink.href.split('/status/')[1] : null
+        console.log('Collected tweet:', {
+          tweetId,
           user: userName,
-          handle: userHandle,
-          text: tweetText,
+          text: tweetText.substring(0, 50),
         })
+
+        if (tweetId) {
+          tweetBuffer.push({
+            user: userName,
+            handle: userHandle,
+            text: tweetText,
+            tweetId: tweetId,
+          })
+
+          console.log('Buffer length:', tweetBuffer.length)
+
+          if (tweetBuffer.length >= 5) {
+            console.log('Sending tweet pack to background:', tweetBuffer)
+            // Send buffer to background for processing
+            chrome.runtime.sendMessage({
+              action: 'processTweetPack',
+              tweets: tweetBuffer,
+            })
+            tweetBuffer = [] // Reset buffer
+          }
+        }
       }
     })
 
@@ -65,5 +101,71 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ status: 'stopped' })
   } else if (request.action === 'getCollectorState') {
     sendResponse(getCollectorState())
+  } else if (request.action === 'tweetSelected') {
+    console.log('Received tweetSelected:', request)
+    // Handle the selected tweet and reply suggestion
+    const { selectedTweet, replySuggestion } = request
+    console.log('Selected tweet:', selectedTweet, 'Reply:', replySuggestion)
+
+    // Find the tweet element by tweetId
+    const tweetElement = document.querySelector(
+      `a[href*="/status/${selectedTweet.tweetId}"]`
+    )
+    console.log('Tweet element found:', tweetElement)
+    if (tweetElement) {
+      const tweetArticle = tweetElement.closest('article[data-testid="tweet"]')
+      console.log('Tweet article found:', tweetArticle)
+      if (tweetArticle) {
+        // Click the reply button to open comment section
+        const replyButton = tweetArticle.querySelector('[data-testid="reply"]')
+        console.log('Reply button found:', replyButton)
+        if (replyButton) {
+          replyButton.click()
+          console.log('Clicked reply button')
+
+          // Wait a bit for the reply modal to open, then insert the reply
+          setTimeout(() => {
+            const replyTextarea =
+              document.querySelector('[data-testid="tweetTextarea_0"]') ||
+              document.querySelector(
+                '[role="textbox"][contenteditable="true"]'
+              ) ||
+              document.querySelector(
+                'textarea[placeholder*="Tweet your reply"]'
+              )
+            console.log('Reply textarea found:', replyTextarea)
+
+            if (replyTextarea) {
+              if (replyTextarea.tagName.toLowerCase() === 'textarea') {
+                replyTextarea.value = replySuggestion
+                replyTextarea.dispatchEvent(
+                  new Event('input', { bubbles: true })
+                )
+                console.log('Inserted reply into textarea')
+              } else {
+                // For contenteditable elements
+                replyTextarea.innerText = replySuggestion
+                replyTextarea.dispatchEvent(
+                  new Event('input', { bubbles: true })
+                )
+                console.log('Inserted reply into contenteditable')
+              }
+
+              showCustomMessage('Reply suggestion inserted!', false, 3000)
+            } else {
+              console.log('Could not find reply textarea')
+              showCustomMessage('Could not find reply textarea', true, 3000)
+            }
+          }, 1000)
+        } else {
+          console.log('Could not find reply button')
+          showCustomMessage('Could not find reply button', true, 3000)
+        }
+      }
+      console.log('Could not find selected tweet element')
+      showCustomMessage('Could not find selected tweet element', true, 3000)
+    }
+
+    sendResponse({ status: 'processed' })
   }
 })

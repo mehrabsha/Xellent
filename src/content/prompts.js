@@ -206,3 +206,36 @@ async function POST_IDEAS_PROMPT() {
   const interests = await getUserInterests()
   return `Suggest 3 unique and engaging X post ideas about ${interests}.`
 }
+
+function SELECT_BEST_TWEET_PROMPT(tweetPack) {
+  return `# Tweet Selection and Reply Generation
+
+You are given a pack of 5 tweets. Your task is to:
+
+1. **Select the best tweet** from the pack that would be most suitable for receiving a reply. Consider:
+   - Engagement potential (controversial, relatable, interesting topics)
+   - Reply-worthiness (not too short, not too long, has substance)
+   - Timeliness (recent, relevant topics)
+   - Quality (well-written, clear, meaningful)
+
+2. **Generate a suggested reply** for the selected tweet that:
+   - Sounds natural and human-like
+   - Adds value to the conversation
+   - Is appropriate in length (1-3 sentences)
+   - Shows genuine engagement with the tweet's content
+
+## Tweet Pack:
+${tweetPack
+  .map(
+    (tweet, index) =>
+      `**Tweet ${index + 1}** by @${tweet.handle}: "${tweet.text}"`
+  )
+  .join('\n\n')}
+
+## Selection Criteria:
+- Choose the tweet that sparks the most interesting conversation
+- Prefer tweets that are substantive but not overwhelming
+- Look for tweets that invite thoughtful responses
+
+Use the select_best_tweet_and_reply tool to provide your selection and reply suggestion.`
+}

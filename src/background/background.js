@@ -163,6 +163,35 @@ const tools = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'select_best_tweet_and_reply',
+      description:
+        'Select the best tweet from a pack of 5 tweets and provide a suggested reply',
+      parameters: {
+        type: 'object',
+        properties: {
+          selectedTweetIndex: {
+            type: 'integer',
+            description: 'Index of the selected tweet (0-4)',
+            minimum: 0,
+            maximum: 4,
+          },
+          replySuggestion: {
+            type: 'string',
+            description: 'Suggested reply text for the selected tweet',
+          },
+          reasoning: {
+            type: 'string',
+            description:
+              'Brief explanation of why this tweet was selected and the reply approach',
+          },
+        },
+        required: ['selectedTweetIndex', 'replySuggestion', 'reasoning'],
+      },
+    },
+  },
 ]
 
 // Listen for messages from popup or content scripts
@@ -191,22 +220,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (
     request.action === 'getReplySuggestions' ||
     request.action === 'getPostIdeas' ||
-    request.action === 'improveText'
+    request.action === 'improveText' ||
+    request.action === 'processTweetPack'
   ) {
     ;(async () => {
-      const prompt = request.prompt
       const modelName = await getModelName()
       const replyLength = await getReplyLength()
 
-      let enhancedPrompt = prompt
-      let useTools = false
+      let prompt,
+        enhancedPrompt,
+        useTools = false
 
-      if (request.action === 'getReplySuggestions') {
-        enhancedPrompt += ` Keep each reply under ${replyLength} words (from one to ${replyLength}). Use the provide_reply_suggestions tool to return the suggestions.`
+      if (request.action === 'processTweetPack') {
+        console.log('Received tweet pack:', request.tweets)
+        // Import the prompt function
+        const { SELECT_BEST_TWEET_PROMPT } = await import(
+          chrome.runtime.getURL('src/content/prompts.js')
+        )
+        prompt = SELECT_BEST_TWEET_PROMPT(request.tweets)
+        enhancedPrompt =
+          prompt +
+          ' Use the select_best_tweet_and_reply tool to provide your selection and reply suggestion.'
+        console.log('Enhanced prompt:', enhancedPrompt)
         useTools = true
-      } else if (request.action === 'improveText') {
-        enhancedPrompt += ` Use the provide_text_improvements tool to return 5 different improved versions of the text.`
-        useTools = true
+      } else {
+        prompt = request.prompt
+        enhancedPrompt = prompt
+
+        if (request.action === 'getReplySuggestions') {
+          enhancedPrompt += ` Keep each reply under ${replyLength} words (from one to ${replyLength}). Use the provide_reply_suggestions tool to return the suggestions.`
+          useTools = true
+        } else if (request.action === 'improveText') {
+          enhancedPrompt += ` Use the provide_text_improvements tool to return 5 different improved versions of the text.`
+          useTools = true
+        }
       }
 
       const llmResponse = await callOpenrouter(
@@ -216,7 +263,48 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       )
 
       if (llmResponse) {
-        if (request.action === 'getReplySuggestions') {
+        if (request.action === 'processTweetPack') {
+          console.log('LLM Response:', llmResponse)
+          if (llmResponse.tool_calls) {
+            const toolCall = llmResponse.tool_calls[0]
+            console.log('Tool call:', toolCall)
+            if (
+              toolCall &&
+              toolCall.function.name === 'select_best_tweet_and_reply'
+            ) {
+              const result = JSON.parse(toolCall.function.arguments)
+              console.log('Parsed result:', result)
+              // Send the selected tweet and reply back to content script
+              chrome.tabs.query(
+                { active: true, currentWindow: true },
+                (tabs) => {
+                  if (tabs[0]) {
+                    console.log('Sending tweetSelected message to content script')
+                    chrome.tabs.sendMessage(tabs[0].id, {
+                      action: 'tweetSelected',
+                      selectedTweet: request.tweets[result.selectedTweetIndex],
+                      replySuggestion: result.replySuggestion,
+                      reasoning: result.reasoning,
+                    })
+                  }
+                }
+              )
+              sendResponse({ status: 'success' })
+            } else {
+              console.error('Invalid tool call response')
+              sendResponse({
+                status: 'error',
+                message: 'Invalid tool call response.',
+              })
+            }
+          } else {
+            console.error('No tool calls in response')
+            sendResponse({
+              status: 'error',
+              message: 'No tool calls in response.',
+            })
+          }
+        } else if (request.action === 'getReplySuggestions') {
           if (llmResponse.tool_calls) {
             // Parse tool calls for structured suggestions
             const toolCall = llmResponse.tool_calls[0]
