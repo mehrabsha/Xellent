@@ -60,6 +60,11 @@ function startTweetCollection() {
 
           if (tweetBuffer.length >= 5) {
             console.log('Sending tweet pack to background:', tweetBuffer)
+            // Pause scrolling
+            if (collectionInterval) {
+              clearInterval(collectionInterval)
+              collectionInterval = null
+            }
             // Send buffer to background for processing
             chrome.runtime.sendMessage(
               {
@@ -74,6 +79,7 @@ function startTweetCollection() {
                   )
                 } else {
                   console.log('Message sent successfully, response:', response)
+                  // Do not resume scrolling here; wait for AI response
                 }
               }
             )
@@ -173,11 +179,107 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           console.log('Could not find reply button')
           showCustomMessage('Could not find reply button', true, 3000)
         }
+      } else {
+        console.log('Could not find selected tweet element')
+        showCustomMessage('Could not find selected tweet element', true, 3000)
       }
+    } else {
       console.log('Could not find selected tweet element')
       showCustomMessage('Could not find selected tweet element', true, 3000)
     }
 
     sendResponse({ status: 'processed' })
+  } else if (request.action === 'resumeScrollinga') {
+    console.log('Resuming scrolling after AI response')
+    if (isCollecting) {
+      collectionInterval = setInterval(() => {
+        if (!isCollecting) return
+
+        // Get tweets currently visible on screen
+        const tweets = document.querySelectorAll('article[data-testid="tweet"]')
+        const visibleTweets = Array.from(tweets).filter((tweet) => {
+          const rect = tweet.getBoundingClientRect()
+          return rect.top >= 0 && rect.bottom <= window.innerHeight
+        })
+
+        visibleTweets.forEach((tweet) => {
+          const tweetText =
+            tweet.querySelector('div[data-testid="tweetText"]')?.innerText || ''
+          const userName =
+            tweet.querySelector('div[data-testid="User-Name"]')?.innerText || ''
+          const userHandle =
+            tweet.querySelector('span[role="link"]')?.innerText || ''
+
+          // Check for media (images or videos) and if is img the alt should not be empty
+          const hasMedia =
+            tweet.querySelector('img[alt]:not([alt=""]), video') !== null
+
+          console.log('Tweet found:', {
+            text: tweetText.substring(0, 50),
+            hasMedia,
+            collected: tweet.dataset.collected,
+          })
+
+          if (tweetText && !tweet.dataset.collected && !hasMedia) {
+            tweet.dataset.collected = 'true'
+
+            // Extract tweet ID from URL
+            const tweetLink = tweet.querySelector('a[href*="/status/"]')
+            const tweetId = tweetLink
+              ? tweetLink.href.split('/status/')[1]
+              : null
+            console.log('Collected tweet:', {
+              tweetId,
+              user: userName,
+              text: tweetText.substring(0, 50),
+            })
+
+            if (tweetId) {
+              tweetBuffer.push({
+                user: userName,
+                handle: userHandle,
+                text: tweetText,
+                tweetId: tweetId,
+              })
+
+              console.log('Buffer length:', tweetBuffer.length)
+
+              if (tweetBuffer.length >= 5) {
+                console.log('Sending tweet pack to background:', tweetBuffer)
+                // Pause scrolling
+                if (collectionInterval) {
+                  clearInterval(collectionInterval)
+                  collectionInterval = null
+                }
+                // Send buffer to background for processing
+                chrome.runtime.sendMessage(
+                  {
+                    action: 'processTweetPack',
+                    tweets: tweetBuffer,
+                  },
+                  (response) => {
+                    if (chrome.runtime.lastError) {
+                      console.error(
+                        'Error sending message to background:',
+                        chrome.runtime.lastError
+                      )
+                    } else {
+                      console.log(
+                        'Message sent successfully, response:',
+                        response
+                      )
+                    }
+                  }
+                )
+                tweetBuffer = [] // Reset buffer
+              }
+            }
+          }
+        })
+
+        // Scroll down
+        window.scrollBy(0, window.innerHeight * 0.8)
+      }, 2000) // Collect every 2 seconds
+    }
   }
 })

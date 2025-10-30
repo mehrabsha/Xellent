@@ -311,32 +311,43 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
               const result = JSON.parse(toolCall.function.arguments)
               console.log('Parsed result:', result)
               // Send the selected tweet and reply back to content script
-              chrome.tabs.query(
-                { active: true, currentWindow: true },
-                (tabs) => {
-                  if (tabs[0]) {
-                    console.log(
-                      'Sending tweetSelected message to content script'
+              console.log(
+                'Sending tweetSelected message to content script, tab ID:',
+                sender.tab?.id
+              )
+              chrome.tabs.sendMessage(
+                sender.tab.id,
+                {
+                  action: 'tweetSelected',
+                  selectedTweet: request.tweets[result.selectedTweetIndex],
+                  replySuggestion: result.replySuggestion,
+                  reasoning: result.reasoning,
+                },
+                (response) => {
+                  if (chrome.runtime.lastError) {
+                    console.error(
+                      'Error sending tweetSelected to content script:',
+                      chrome.runtime.lastError
                     )
+                  } else {
+                    console.log(
+                      'tweetSelected sent successfully, response:',
+                      response
+                    )
+                    // After sending tweetSelected, send resumeScrolling message
                     chrome.tabs.sendMessage(
-                      tabs[0].id,
-                      {
-                        action: 'tweetSelected',
-                        selectedTweet:
-                          request.tweets[result.selectedTweetIndex],
-                        replySuggestion: result.replySuggestion,
-                        reasoning: result.reasoning,
-                      },
-                      (response) => {
+                      sender.tab.id,
+                      { action: 'resumeScrolling' },
+                      (resumeResponse) => {
                         if (chrome.runtime.lastError) {
                           console.error(
-                            'Error sending tweetSelected to content script:',
+                            'Error sending resumeScrolling to content script:',
                             chrome.runtime.lastError
                           )
                         } else {
                           console.log(
-                            'tweetSelected sent successfully, response:',
-                            response
+                            'resumeScrolling sent successfully, response:',
+                            resumeResponse
                           )
                         }
                       }
